@@ -48,7 +48,7 @@ def decode_frame(f):
         syms.append(np.argmax(fft))
     return syms
 
-syncSig = np.concatenate(list(map(lambda x: sinBuf() if x > 0 else [0] * BUFFER, syncBits)))
+syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
 
 curr = prev = 0.0
 climbing = False
@@ -64,7 +64,7 @@ while True:
     argm = np.argmax(corr)
 
     if prev == curr and curr > 100:
-        #print("FRAME??? " + str(curr) + " " + str(argm))
+        print("FRAME??? " + str(curr) + " " + str(argm))
         f = frame2str(decode_frame(data[argm:argm+len(syncSig)]))
         if f != '':
             print(f)
