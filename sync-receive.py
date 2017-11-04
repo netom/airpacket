@@ -41,6 +41,9 @@ def sinBuf():
 def normalize(x):
     return x / np.max(np.abs(x))
 
+def decode_frame(f):
+    pass
+
 # TODO: sin
 syncSig = np.concatenate(list(map(lambda x: sinBuf() if x > 0 else [0] * BUFFER, syncBits)))
 
@@ -60,5 +63,6 @@ while True:
 
     if prev == curr and curr > 100:
         print("FRAME??? " + str(prev) + " " + str(argm))
+        decode_frame(data[argm:len(syncSig)])
 
     prev = curr
