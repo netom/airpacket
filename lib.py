@@ -3,22 +3,25 @@ import unireedsolomon as urs
 RATE   = 44100
 BUFFER = 100
 
-code = urs.rs.RSCoder(29,19) # 20 payload bytes, 19 additional bytes
+syncBits = [1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 
+1, -1, -1, -1, 1, -1, -1, 1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 
+-1, -1, -1, 1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, 
+1, -1, 1, 1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, 
+-1, 1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, 1, 
+1, 1, -1, 1, -1, 1, -1, -1, -1, -1, -1, -1, -1, 1, 1, -1, -1, -1, -1, 
+-1, 1, -1, 1, -1, 1, -1, 1, 1, -1, 1, 1, -1, 1, -1, 1, 1, 1, 1, 1, 1, 
+1, -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, -1, 1, 1, 
+-1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 
+-1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 
+1, -1, -1, 1] # 200 nibbles, 108 data nibbles, 92 sync nibbles -> 54 bytes
 
-syncBits = [
-    1, -1,  1,  1,  1,  1,  1, -1,  1,  1, -1, -1,  1,  1, -1,  1,  1,
-    1,  1, -1,  1,  1, -1, -1,  1,  1, -1, -1, -1,  1,  1, -1,  1,  1,
-    1,  1,  1,  1, -1, -1, -1, -1, -1,  1, -1, -1,  1,  1, -1, -1, -1, 
-   -1, -1,  1,  1,  1,  1,  1,  1,  1,  1,  1, -1,  1, -1,  1,  1, -1,
-    1, -1,  1,  1, -1,  1,  1, -1,  1, -1, -1, -1,  1, -1,  1, -1,  1,
-   -1, -1,  1, -1,  1, -1,  1, -1,  1,  1,  1, -1, -1,  1,  1,  1, -1,
-    1,  1,  1,  1, -1, -1, -1, -1, -1, -1, -1,  1,  1, -1, -1, -1, -1,
-    1,  1, -1,  1, -1, -1, -1
-] # 58 data bits, 68 sync bits
+code = urs.rs.RSCoder(54, 34) # 20 payload bytes, 34 additional bytes
 
 symbols = list(range(17))
 
-#print(sum(map(lambda x: 0 if x == -1 else 1, syncBits)))
+#print(len(syncBits))
+#print(sum(map(lambda x: 1 if x == -1 else 0, syncBits)))
+#print(sum(map(lambda x: 1 if x == 1 else 0, syncBits)))
 
 def str2nibbles(s):
     ns = []
@@ -28,7 +31,7 @@ def str2nibbles(s):
     return ns
 
 def str2frame(s):
-    raw = str2nibbles(code.encode(s.rjust(10)))
+    raw = str2nibbles(code.encode(s.rjust(20)))
     ret = []
     i = 0
     for b in syncBits:
@@ -50,4 +53,4 @@ def frame2str(f):
     except urs.rs.RSCodecError:
         return ''
 
-#print(frame2str(str2frame('hello')))
+#print(frame2str(str2frame('Hello World!')))

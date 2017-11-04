@@ -9,9 +9,7 @@ from lib import *
 
 DEVICE = 0
 
-p = pyaudio.PyAudio()
-
-symbolList = str2frame('hello')
+symbolList = str2frame('Hello World!')
 
 tones = []
 for s in symbolList:
@@ -22,6 +20,10 @@ for s in symbolList:
         tone[i] = np.sin((4410 + s * 441) * t)
 
     tones = np.append(tones, tone)
+
+#sys.stdout.write(str((tones*0x7fff).astype(np.int16).tobytes(), 'latin-1'))
+
+p = pyaudio.PyAudio()
 
 stream = p.open(
     output_device_index = DEVICE,

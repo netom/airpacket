@@ -10,9 +10,9 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-best_so_far = syncBits
+VECTOR_LEN = 200
 
-VECTOR_LEN = len(best_so_far)
+best_so_far = syncBits
 
 def random_vector(l):
     return numpy.random.randint(0, 2, l) * 2 - 1
@@ -75,9 +75,7 @@ def hillclimb(v):
     return (bestv, bestpsl)
         
 
-VECTOR_LEN = 126
-
-bestv = best_so_far
+bestv = best_so_far = random_vector(VECTOR_LEN)
 bestpsl = psl(bestv)
 
 bests = set()
@@ -88,7 +86,7 @@ while True:
     for i in range(VECTOR_LEN):
         v = numpy.roll(v, 1)
         (vv, pslvv) = hillclimb(v)
-        #print psl(v), pslvv, 20 * numpy.log10(float(pslvv) / VECTOR_LEN)
+        #print(psl(v), pslvv, 20 * numpy.log10(float(pslvv) / VECTOR_LEN))
         if pslvv <= bestpsl and (tuple(vv) not in bests):
             bestpsl = pslvv
             bestv = vv
