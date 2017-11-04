@@ -4,13 +4,10 @@ import numpy as np
 import math
 import time
 import random
-import matplotlib.pyplot as plt
 
 from lib import *
 
 DEVICE = 0
-RATE   = 44100
-BUFFER = 100
 
 p = pyaudio.PyAudio()
 
@@ -20,7 +17,7 @@ tones = []
 for b in syncBits:
     tone = np.zeros(BUFFER, dtype=np.float32)
 
-    if b == 1:
+    if b > 0:
         for i in range(BUFFER):
             t = 2.0 * np.pi * i / float(RATE)
             #tone[i] = np.sign(np.sin((4410 + s * 441) * t))
@@ -40,12 +37,9 @@ stream = p.open(
 
 stream.write(tones.astype(np.float32).tostring(), len(tones))
 
-time.sleep(len(tones)*2/float(RATE))
+time.sleep(len(tones)/float(RATE))
 
 stream.stop_stream()
 stream.close()
 
 p.terminate()
-
-plt.plot(tones)
-plt.show()

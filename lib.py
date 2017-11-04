@@ -1,5 +1,8 @@
 import unireedsolomon as urs
 
+RATE   = 44100
+BUFFER = 200
+
 code = urs.rs.RSCoder(20,10)
 
 syncBits = [

@@ -8,13 +8,9 @@ import numpy
 import random
 import matplotlib.pyplot as plt
 
-best_so_far = [0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 
-1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 
-1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 
-1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 
-1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 1, 
-1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 
-1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 1] # -21 
+from lib import *
+
+best_so_far = syncBits
 
 VECTOR_LEN = len(best_so_far)
 
@@ -81,22 +77,26 @@ def hillclimb(v):
 
 VECTOR_LEN = 126
 
-bestv = random_vector(VECTOR_LEN)
+bestv = best_so_far
 bestpsl = psl(bestv)
 
+bests = set()
+bests.add(tuple(bestv))
+
 while True:
-    print(bestpsl, 20 * numpy.log10(float(bestpsl) / VECTOR_LEN), bestv)
     v = random_vector(VECTOR_LEN)
     for i in range(VECTOR_LEN):
         v = numpy.roll(v, 1)
         (vv, pslvv) = hillclimb(v)
         #print psl(v), pslvv, 20 * numpy.log10(float(pslvv) / VECTOR_LEN)
-        if pslvv < bestpsl:
+        if pslvv <= bestpsl and (tuple(vv) not in bests):
             bestpsl = pslvv
             bestv = vv
+            bests.add(tuple(bestv))
+            print(bestpsl, 20 * numpy.log10(float(bestpsl) / VECTOR_LEN), list(bestv))
+    print(".")
+ 
+#print("###", bestpsl, bestv, autocorrelate(bestv))
 
-
-print("###", beste, bestv, autocorrelate(bestv))
-
-plt.plot(autocorrelate(bestv))
-plt.show()
+#plt.plot(numpy.correlate(v, v, mode='full'))
+#plt.show()

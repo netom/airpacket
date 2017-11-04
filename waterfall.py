@@ -7,8 +7,8 @@ import matplotlib.pyplot
 import matplotlib.animation
 
 RATE        = 44100
-FFTPOINTS   = 100
-VALUEPOINTS = 100
+FFTPOINTS   = 1000
+VALUEPOINTS = 1000
 OVERLAP     = 0
 CENTERFREQ  = 6200
 BANDWIDTH   = 4000
@@ -16,7 +16,6 @@ WINDOW      = numpy.hamming
 WIDTH       = 128
 GAIN        = 2000
 
-DEVICE = 1
 
 RESOLUTION = RATE/float(FFTPOINTS)
 START      = int(CENTERFREQ/RESOLUTION-BANDWIDTH/2/RESOLUTION)
@@ -50,7 +49,6 @@ fig = matplotlib.pyplot.figure()
 p = pyaudio.PyAudio()
 
 stream = p.open(
-    input_device_index = DEVICE,
     rate = RATE,
     channels = 1,
     input = True,
