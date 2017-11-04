@@ -42,15 +42,17 @@ def str2frame(s):
             i += 1
     return ret
 
-def frame2str(f):
+def nubsync(f):
+    return list(map(lambda x: x[1], filter(lambda x: x[0] == -1, zip(syncBits, f))))
+
+def nibbles2str(f, erasures = []):
     s = ''
-    f2 = list(map(lambda x: x[1], filter(lambda x: x[0] == -1, zip(syncBits, f))))
-    for i in range(0, len(f2), 2):
-        o = max(0, min((f2[i]-1) + (f2[i+1]-1)*16, 0xff))
+    for i in range(0, len(f), 2):
+        o = max(0, min((f[i]-1) + (f[i+1]-1)*16, 0xff))
         s += chr(o)
     try:
-        return code.decode(s)[0].strip()
+        return code.decode(s, erasures)[0].strip()
     except urs.rs.RSCodecError:
         return ''
 
-#print(frame2str(str2frame('Hello World!')))
+#print(nibbles2str(nubsync(str2frame('Hello World!'))))

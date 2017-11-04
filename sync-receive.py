@@ -3,6 +3,7 @@
 
 import numpy as np
 import pyaudio
+import matplotlib.pyplot as plt
 
 from lib import *
 
@@ -43,10 +44,33 @@ def normalize(x):
 
 def decode_frame(f):
     syms = []
+    erasures = []
+    j = 0
+    ffts = []
     for i in range(len(syncBits)):
         fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
-        syms.append(np.argmax(fft))
-    return syms
+        ffts.append(fft)
+
+        if syncBits[i] == 1:
+            continue
+
+        bestpos = np.argmax(fft)
+        best = fft[bestpos]
+
+        fft[bestpos] = 0
+
+        bestpos2 = np.argmax(fft)
+        best2 = fft[bestpos2]
+
+        syms.append(bestpos)
+
+        if best-best2 < 0.005:
+            erasures.append(j)
+        j += 1
+
+    plt.imshow(ffts)
+    plt.show()
+    return (syms, erasures)
 
 syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
 
@@ -63,9 +87,10 @@ while True:
     curr = np.max(corr)
     argm = np.argmax(corr)
 
-    if prev == curr and curr > 100:
+    if prev == curr and curr > 500:
         print("FRAME??? " + str(curr) + " " + str(argm))
-        f = frame2str(decode_frame(data[argm:argm+len(syncSig)]))
+        ns, erasures = decode_frame(data[argm:argm+len(syncSig)])
+        f = nibbles2str(ns, erasures)
         if f != '':
             print(f)
 
