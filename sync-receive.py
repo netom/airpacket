@@ -42,11 +42,13 @@ def normalize(x):
     return x / np.max(np.abs(x))
 
 def decode_frame(f):
-    pass
+    syms = []
+    for i in range(len(syncBits)):
+        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
+        syms.append(np.argmax(fft))
+    return syms
 
-# TODO: sin
 syncSig = np.concatenate(list(map(lambda x: sinBuf() if x > 0 else [0] * BUFFER, syncBits)))
-
 
 curr = prev = 0.0
 climbing = False
@@ -62,7 +64,9 @@ while True:
     argm = np.argmax(corr)
 
     if prev == curr and curr > 100:
-        print("FRAME??? " + str(prev) + " " + str(argm))
-        decode_frame(data[argm:len(syncSig)])
+        #print("FRAME??? " + str(curr) + " " + str(argm))
+        f = frame2str(decode_frame(data[argm:argm+len(syncSig)]))
+        if f != '':
+            print(f)
 
     prev = curr

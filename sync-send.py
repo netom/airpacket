@@ -14,14 +14,12 @@ p = pyaudio.PyAudio()
 symbolList = str2frame('hello')
 
 tones = []
-for b in syncBits:
+for s in symbolList:
     tone = np.zeros(BUFFER, dtype=np.float32)
-
-    if b > 0:
-        for i in range(BUFFER):
-            t = 2.0 * np.pi * i / float(RATE)
-            #tone[i] = np.sign(np.sin((4410 + s * 441) * t))
-            tone[i] = np.sin((4410 + 0 * 441) * t)
+    for i in range(BUFFER):
+        t = 2.0 * np.pi * i / float(RATE)
+        #tone[i] = np.sign(np.sin((4410 + s * 441) * t))
+        tone[i] = np.sin((4410 + s * 441) * t)
 
     tones = np.append(tones, tone)
 
