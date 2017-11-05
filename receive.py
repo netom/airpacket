@@ -77,22 +77,27 @@ def decode_frame(f):
 syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
 #syncSig = np.concatenate(list(map(lambda x: sinBuf() if x == 1 else [0] * BUFFER, syncBits)))
 
-curr = prev = 0.0
-climbing = False
-while True:
-    data[:frameLen+BUFFER*5] = data[BUFFER*5:]
-    data[frameLen+BUFFER*5:] = np.fromstring(
-        stream.read(BUFFER*5),
+def read_data():
+    datalen = BUFFER*len(syncBits)
+    return np.fromstring(
+        stream.read(datalen),
         dtype=np.float32
     )
+
+while True:
+    data = read_data()
 
     #corr = np.abs(np.correlate(normalize(data), syncSig))
     corr = np.correlate(normalize(data), syncSig)
     curr = np.max(corr)
     argm = np.argmax(corr)
 
-    if curr > 1000:
+    if curr > 100:
         print("FRAME??? " + str(curr) + " " + str(argm))
+        data = np.concatenate([data, read_data()])
+        corr = np.correlate(normalize(data), syncSig)
+        curr = np.max(corr)
+        argm = np.argmax(corr)
         ns, erasures = decode_frame(data[argm:argm+len(syncSig)])
         f = nibbles2str(ns, erasures)
         if f != '':
