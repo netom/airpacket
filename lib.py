@@ -15,7 +15,7 @@ syncBits = [1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1,
 -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 
 1, -1, -1, 1] # 200 nibbles, 108 data nibbles, 92 sync nibbles -> 54 bytes
 
-code = urs.rs.RSCoder(54, 34) # 20 payload bytes, 34 additional bytes
+code = urs.rs.RSCoder(54, 20) # 20 payload bytes, 34 additional bytes
 
 symbols = list(range(17))
 

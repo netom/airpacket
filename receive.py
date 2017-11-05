@@ -65,8 +65,7 @@ def decode_frame(f):
 
         syms.append(bestpos)
 
-        #print(best-best2)
-        #if best-best2 < 0.1:
+        #if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
         #    erasures.append(j)
         j += 1
 
@@ -91,20 +90,18 @@ while True:
 
     corr = np.correlate(normalize(data[:datalen*2]), syncSig)
     signal_strength = np.max(corr)
-    #argm = np.argmax(corr)
 
-    if signal_strength > 500:
-        print("FRAME??? " + str(signal_strength))
+    if signal_strength > 1000:
+        print("Got sync signal, decoding... ")
         data[datalen*2:] = read_data()
         corr = np.correlate(normalize(data), syncSig)
         signal_strength = np.max(corr)
-        print("NEW STRENGHT: " + str(signal_strength))
-        argm = np.argmax(corr)
-        ns, erasures = decode_frame(data[argm:argm+len(syncSig)])
+        best_pos = np.argmax(corr)
+        ns, erasures = decode_frame(data[best_pos:best_pos+len(syncSig)])
         f = nibbles2str(ns, erasures)
         if f != '':
-            print("DECODED: " + f)
+            print("DECODED: >>>>>>>> " + f + " <<<<<<<<")
         else:
-            print("NO DECODE")
+            print("NO DECODE.")
         data = np.zeros(datalen*3)
 

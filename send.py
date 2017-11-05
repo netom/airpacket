@@ -9,7 +9,11 @@ from lib import *
 
 DEVICE = 0
 
-symbolList = str2frame('Hello World!')
+if len(sys.argv) < 2:
+    print("Usage: send.py <message, at most 10 characters>")
+    exit()
+
+symbolList = str2frame(sys.argv[1])
 
 tones = []
 for s in symbolList:
