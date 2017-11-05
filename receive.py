@@ -50,6 +50,7 @@ def decode_frame(f):
     ffts = []
     for i in range(len(syncBits)):
         fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER]*WINDOW(BUFFER))[10:28])
+        #fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
         ffts.append(fft)
 
         if syncBits[i] == 1:
@@ -65,8 +66,8 @@ def decode_frame(f):
 
         syms.append(bestpos)
 
-        #if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
-        #    erasures.append(j)
+        if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
+            erasures.append(j)
         j += 1
 
     #plt.imshow(ffts)
@@ -97,11 +98,12 @@ while True:
         corr = np.correlate(normalize(data), syncSig)
         signal_strength = np.max(corr)
         best_pos = np.argmax(corr)
+
         ns, erasures = decode_frame(data[best_pos:best_pos+len(syncSig)])
         f = nibbles2str(ns, erasures)
         if f != '':
             print("DECODED: >>>>>>>> " + f + " <<<<<<<<")
         else:
             print("NO DECODE.")
-        data = np.zeros(datalen*3)
 
+        data = np.zeros(datalen*3)
