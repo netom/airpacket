@@ -36,11 +36,12 @@ def sinBuf():
     for i in range(BUFFER):
         t = 2.0 * np.pi * i / float(RATE)
         #tone[i] = np.sign(np.sin((4410 + s * 441) * t))
-        tone[i] = np.sin((4410 + 0 * 441) * t)
+        tone[i] = np.sin((4410 + 0 * 441) * t) * np.sqrt(2) # Make RMS = 1
     return tone
 
 def normalize(x):
-    return x / np.max(np.abs(x))
+    #return x / np.max(np.abs(x))
+    return x / np.sqrt(np.sum(np.abs(x)**2) / len(x))
 
 def decode_frame(f):
     syms = []
@@ -48,7 +49,7 @@ def decode_frame(f):
     j = 0
     ffts = []
     for i in range(len(syncBits)):
-        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
+        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER]*WINDOW(BUFFER))[10:28])
         ffts.append(fft)
 
         if syncBits[i] == 1:
@@ -64,15 +65,17 @@ def decode_frame(f):
 
         syms.append(bestpos)
 
-        if best-best2 < 0.005:
+        #print(best-best2)
+        if best-best2 < 0.1:
             erasures.append(j)
         j += 1
 
-    plt.imshow(ffts)
-    plt.show()
+    #plt.imshow(ffts)
+    #plt.show()
     return (syms, erasures)
 
 syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
+#syncSig = np.concatenate(list(map(lambda x: sinBuf() if x == 1 else [0] * BUFFER, syncBits)))
 
 curr = prev = 0.0
 climbing = False
@@ -83,11 +86,12 @@ while True:
         dtype=np.float32
     )
 
-    corr = np.abs(np.correlate(normalize(data), syncSig))
+    #corr = np.abs(np.correlate(normalize(data), syncSig))
+    corr = np.correlate(normalize(data), syncSig)
     curr = np.max(corr)
     argm = np.argmax(corr)
 
-    if prev == curr and curr > 500:
+    if curr > 1000:
         print("FRAME??? " + str(curr) + " " + str(argm))
         ns, erasures = decode_frame(data[argm:argm+len(syncSig)])
         f = nibbles2str(ns, erasures)
