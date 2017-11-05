@@ -66,8 +66,8 @@ def decode_frame(f):
         syms.append(bestpos)
 
         #print(best-best2)
-        if best-best2 < 0.1:
-            erasures.append(j)
+        #if best-best2 < 0.1:
+        #    erasures.append(j)
         j += 1
 
     #plt.imshow(ffts)
@@ -77,30 +77,34 @@ def decode_frame(f):
 syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
 #syncSig = np.concatenate(list(map(lambda x: sinBuf() if x == 1 else [0] * BUFFER, syncBits)))
 
+datalen = BUFFER*len(syncBits)
 def read_data():
-    datalen = BUFFER*len(syncBits)
     return np.fromstring(
         stream.read(datalen),
         dtype=np.float32
     )
 
+data = np.zeros(datalen*3)
 while True:
-    data = read_data()
+    data[:datalen] = data[datalen:datalen*2]
+    data[datalen:datalen*2] = read_data()
 
-    #corr = np.abs(np.correlate(normalize(data), syncSig))
-    corr = np.correlate(normalize(data), syncSig)
-    curr = np.max(corr)
-    argm = np.argmax(corr)
+    corr = np.correlate(normalize(data[:datalen*2]), syncSig)
+    signal_strength = np.max(corr)
+    #argm = np.argmax(corr)
 
-    if curr > 100:
-        print("FRAME??? " + str(curr) + " " + str(argm))
-        data = np.concatenate([data, read_data()])
+    if signal_strength > 500:
+        print("FRAME??? " + str(signal_strength))
+        data[datalen*2:] = read_data()
         corr = np.correlate(normalize(data), syncSig)
-        curr = np.max(corr)
+        signal_strength = np.max(corr)
+        print("NEW STRENGHT: " + str(signal_strength))
         argm = np.argmax(corr)
         ns, erasures = decode_frame(data[argm:argm+len(syncSig)])
         f = nibbles2str(ns, erasures)
         if f != '':
-            print(f)
+            print("DECODED: " + f)
+        else:
+            print("NO DECODE")
+        data = np.zeros(datalen*3)
 
-    prev = curr
