@@ -7,6 +7,8 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
+DEVICE = -1
+
 RATE   = 44100
 FRAME  = 100
 WINDOW = np.hamming
@@ -14,6 +16,7 @@ WINDOW = np.hamming
 p = pyaudio.PyAudio()
 
 stream = p.open(
+    input_device_index = DEVICE,
     rate = RATE,
     channels = 1,
     input = True,
