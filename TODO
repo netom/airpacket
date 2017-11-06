@@ -1,0 +1,35 @@
+Sprints:
+
+1
+* Factor out signal generation and reception
+* Abstract data input and output: file, pyaudio
+* Make a simple command line tool to send and receive data (string and hex)
+
+2
+* Make a waterfall graph tool
+* Make a playback tool (sox)
+* Make a script that generates lot of data files.
+    * message, frame position, snr in the file name
+
+3
+* Make a script that tries to decode the files
+* Make a script that scores the performance of the decode and frame positioning
+
+4
+* Benchmarks
+* Tests
+
+5-6
+* Write a report
+    * Overview
+    * Design
+        * Fixed frame format. Frequency is known, position is not
+        * Frame synchronisation
+        * Forward error correction
+        * Message encoding
+    * Script usage
+    * Benchmarking
+    * Benchmark results
+    * Real life testing
+    * Possible ways to improve
+    * Code documentation

@@ -1,4 +1,5 @@
 import unireedsolomon as urs
+import numpy as np
 
 RATE   = 44100
 BUFFER = 100
@@ -54,5 +55,13 @@ def nibbles2str(f, erasures = []):
         return code.decode(s, erasures)[0].strip()
     except urs.rs.RSCodecError:
         return ''
+
+def gwn(size, std=1, mean=0):
+    """Gaussian white noise"""
+    return np.random.normal(mean, std, size=size)
+
+def dba(db):
+    """Returns a ratio of amplitude"""
+    return 10.0**(db/20.0)
 
 #print(nibbles2str(nubsync(str2frame('Hello World!'))))

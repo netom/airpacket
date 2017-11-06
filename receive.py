@@ -69,16 +69,33 @@ def decode_frame(f):
 
         syms.append(bestpos)
 
-        if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
-            erasures.append(j)
-        j += 1
+        #if best-best2 < 0.09: # Colud be much smarter. Also: soft decode.
+        #    erasures.append(j)
+        #j += 1
 
+    #print(len(erasures))
     #plt.imshow(ffts)
     #plt.show()
     return (syms, erasures)
 
 syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
-#syncSig = np.concatenate(list(map(lambda x: sinBuf() if x == 1 else [0] * BUFFER, syncBits)))
+
+data = np.fromfile("gwn-3db.s16", dtype=np.int16).astype(np.float32) / 0x7fff
+
+corr = np.correlate(normalize(data), syncSig)
+signal_strength = np.max(corr)
+best_pos = np.argmax(corr)
+print(signal_strength)
+
+ns, erasures = decode_frame(data[best_pos:best_pos+len(syncSig)])
+f = nibbles2str(ns, erasures)
+if f != '':
+    print("DECODED: >>>>>>>> " + f + " <<<<<<<<")
+else:
+    print("NO DECODE.")
+
+exit()
+
 
 datalen = BUFFER*len(syncBits)
 def read_data():
