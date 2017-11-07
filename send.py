@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-AMP    = 0.03
-NOISE  = AMP*db2a(8)
+AMP        = 0.03
+NOISE      = AMP*db2a(-100)
+DISTORTION = 1.0
 
 sys.argv.append("űű Hello World!")
 
@@ -20,7 +21,7 @@ if len(sys.argv) < 2:
 
 symbolList = str2frame(sys.argv[1][:20])
 
-tones = symbols2tones(symbolList, AMP)
+tones = symbols2tones(symbolList, AMP, DISTORTION)
 
 # Calculate (estimate) carrier power, noise power, carrier to noise ratio, Eb/N0 (assuming unit impedance)
 pwrc = np.average(tones**2)
