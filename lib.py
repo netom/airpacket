@@ -86,16 +86,13 @@ def bytes2symbols(bs):
 def nubsync(f):
     return list(map(lambda x: x[1], filter(lambda x: x[0] == -1, zip(syncBits, f))))
 
-def nibbles2str(f, erasures = []):
+def nibbles2bytes(ns, erasures = []):
     b = b''
-    for i in range(0, len(f), 2):
-        o = max(0, min((f[i]-1) + (f[i+1]-1)*16, 0xff))
+    for i in range(0, len(ns), 2):
+        o = max(0, min((ns[i]-1) + (ns[i+1]-1)*16, 0xff))
         b += bytes([o])
-    try:
-        decoded = bytes(map(int, code.decode(b, erasures, return_string=False)[0]))
-        return str(decoded, 'UTF-8').strip()
-    except urs.rs.RSCodecError:
-        return ''
+    decoded = bytes(map(int, code.decode(b, erasures, return_string=False)[0]))
+    return decoded
 
 def gwn(size, std=1, mean=0):
     """Gaussian white noise"""

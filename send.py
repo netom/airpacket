@@ -60,8 +60,8 @@ if args.hex:
         if c not in ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']:
             print('The -x flag was issued, yet the message contains a non-hexadecimal character "%s".' % c)
             exit()
-    for i in range(len(args.message)-1):
-        msg += bytes([(int(args.message[i], 16) & 0xf) + (int(args.message[i+1], 16) << 4)])
+    for i in range(0, len(args.message)-1, 2):
+        msg += bytes([(int(args.message[i], 16) << 4) + (int(args.message[i+1], 16) & 0x0f)])
 else:
     if len(args.message) > 20:
         print("A text message must be at most 20 characters.")
@@ -71,7 +71,7 @@ else:
             print("A text message must only contain ASCII characters.")
             exit()
         msg += bytes([ord(c)])
-    msg.ljust(LEN_PAYLOAD)
+    msg = msg.ljust(LEN_PAYLOAD)
 
 signal_amp = args.amp
 noise_amp  = 0

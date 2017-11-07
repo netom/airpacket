@@ -1,8 +1,5 @@
 Sprints:
 
-1
-* Make a simple command line tool to send and receive data (string and hex)
-
 2
 * Make a waterfall graph tool
 * Make a playback tool (sox)
@@ -10,14 +7,16 @@ Sprints:
     * message, frame position, snr in the file name
 
 3
-* Make a script that tries to decode the files
 * Make a script that scores the performance of the decode and frame positioning
 
 4
+* Improve performance
+
+5
 * Benchmarks
 * Tests
 
-5-6
+6-7
 * Write a report
     * Overview
     * Design
