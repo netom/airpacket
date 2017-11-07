@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-AMP    = 0.1
-NOISE  = AMP*db2a(3)
+AMP    = 0.03
+NOISE  = AMP*db2a(8)
 
 sys.argv.append("űű Hello World!")
 
@@ -40,10 +40,12 @@ padding = [0]*int((SAMPLING_RATE-len(tones))/2)
 tones = np.concatenate([padding, tones, padding])
 tones += NOISE * gwn(len(tones))
 
+print("Peak:         ", np.max(np.abs(tones)))
+
 #fft = np.absolute(np.fft.rfft(tones))**2/len(tones) # This estimates PSD, power/hz
 fft = np.absolute(np.fft.rfft(tones))/np.sqrt(len(tones)) # Shows amplitude
 #print(np.average(fft))
-#plt.plot(fft)
+#plt.plot(tones)
 #plt.show()
 
 write_s16file("gwn-3db.s16", tones)
