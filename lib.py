@@ -192,6 +192,33 @@ def receive_frame(frame, dft_window = None):
     #plt.show()
     return (syms, erasures)
 
+def pyaudio_read(samples, device=-1):
+    p = pyaudio.PyAudio()
+
+    stream = p.open(
+        input_device_index = device,
+        rate = SAMPLING_RATE,
+        channels = 1,
+        input = True,
+        output = False,
+        frames_per_buffer = SYMBOL_LENGTH,
+        format = pyaudio.paFloat32
+    )
+
+    while True:
+        yield np.fromstring(
+            stream.read(samples),
+            dtype=np.float32
+        )
+
+def s16_read(samples, filename):
+    data = np.fromfile(filename, dtype=np.int16).astype(np.float32) / 0x7fff
+    i = 0
+    while True:
+        yield data[i*samples:(i+1)*samples]
+        i += 1
+        # TODO: EOF handling
+
 code = urs.rs.RSCoder(LEN_CODE, LEN_PAYLOAD)
 
 symbols = list(range(CPMSK_N))

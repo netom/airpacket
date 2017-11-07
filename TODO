@@ -1,7 +1,6 @@
 Sprints:
 
 1
-* Abstract data input: file, pyaudio
 * Make a simple command line tool to send and receive data (string and hex)
 
 2
