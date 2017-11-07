@@ -7,14 +7,6 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-WINDOW = np.hamming
-
-halfbuf = int(SYMBOL_LENGTH / 2)
-
-frameLen = len(syncBits) * SYMBOL_LENGTH
-halfFrameLen = 10*SYMBOL_LENGTH
-oneAndHalfFrameLen = frameLen + halfFrameLen
-
 datalen = SYMBOL_LENGTH*len(syncBits)
 
 #generator = s16_read(datalen, 'gwn-3db.s16')

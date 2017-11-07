@@ -71,8 +71,8 @@ def nibbles(s):
         ns.append((int(c) >> 4))
     return ns
 
-def str2frame(s):
-    raw = nibbles(code.encode(bytes(s, 'UTF-8').ljust(LEN_PAYLOAD), return_string=False))
+def bytes2symbols(bs):
+    raw = nibbles(code.encode(bs, return_string=False))
     ret = []
     i = 0
     for b in syncBits:
@@ -113,7 +113,7 @@ def p2db(a):
     """Returns decibel of power ratio"""
     return 10.0*np.log10(a)
 
-def write_s16file(fname, f32data):
+def write_s16file(f32data, fname):
     (f32data*0x7fff).astype(np.int16).tofile(fname)
 
 def write_pyaudio(f32data, device=-1):
