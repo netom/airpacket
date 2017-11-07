@@ -9,8 +9,6 @@ from lib import *
 
 DEVICE = -1
 
-RATE   = 44100
-FRAME  = 100
 WINDOW = np.hamming
 
 p = pyaudio.PyAudio()
@@ -21,7 +19,7 @@ stream = p.open(
     channels = 1,
     input = True,
     output = False,
-    frames_per_buffer = FRAME,
+    frames_per_buffer = BUFFER,
     format = pyaudio.paFloat32
 )
 
@@ -85,7 +83,8 @@ data = np.fromfile("gwn-3db.s16", dtype=np.int16).astype(np.float32) / 0x7fff
 corr = np.correlate(normalize(data), syncSig)
 signal_strength = np.max(corr)
 best_pos = np.argmax(corr)
-print(signal_strength)
+#best_pos = 2050
+print(signal_strength, best_pos)
 
 ns, erasures = decode_frame(data[best_pos:best_pos+len(syncSig)])
 f = nibbles2str(ns, erasures)

@@ -16,7 +16,9 @@ syncBits = [1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1,
 -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 
 1, -1, -1, 1] # 200 nibbles, 108 data nibbles, 92 sync nibbles -> 54 bytes
 
-code = urs.rs.RSCoder(54, 20) # 20 payload bytes, 34 additional bytes
+LEN_CODE    = 54
+LEN_PAYLOAD = 20
+code = urs.rs.RSCoder(LEN_CODE, LEN_PAYLOAD) # 20 payload bytes, 34 additional bytes
 
 symbols = list(range(17))
 
@@ -32,7 +34,7 @@ def str2nibbles(s):
     return ns
 
 def str2frame(s):
-    raw = str2nibbles(code.encode(s.rjust(20)))
+    raw = str2nibbles(code.encode(s.rjust(LEN_PAYLOAD)))
     ret = []
     i = 0
     for b in syncBits:
@@ -60,8 +62,16 @@ def gwn(size, std=1, mean=0):
     """Gaussian white noise"""
     return np.random.normal(mean, std, size=size)
 
-def dba(db):
+def db2a(db):
     """Returns a ratio of amplitude"""
     return 10.0**(db/20.0)
+
+def a2db(a):
+    """Returns decibel of amplitude ratio"""
+    return 20.0*np.log10(a)
+
+def p2db(a):
+    """Returns decibel of power ratio"""
+    return 10.0*np.log10(a)
 
 #print(nibbles2str(nubsync(str2frame('Hello World!'))))

@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 from lib import *
 
 DEVICE = -1
-AMP    = 0.2
-NOISE  = AMP*dba(3)
+AMP    = 0.1
+NOISE  = AMP*db2a(3)
 
 sys.argv.append("hello")
 
@@ -33,10 +33,27 @@ for s in symbolList:
 
     tones = np.append(tones, tone)
 
-tones = np.concatenate([[0]*random.randint(1000, 50000), tones, [0]*random.randint(1000, 50000)])
+# Calculate (estimate) carrier power, noise power, carrier to noise ratio, Eb/N0 (assuming unit impedance)
+pwrc = np.average(tones**2)
+pwrn = np.average((NOISE * gwn(len(tones)))**2)
+cnr  = pwrc / pwrn
+fb   = 160 * (44100 / len(tones)) # Channel data rate
+B    = 22050 # Bandwidth: whole audio spectrum
+print("Carrier power:", pwrc)
+print("Noise power:  ", pwrn)
+print("CNR (dB):     ", p2db(cnr))
+print("Net bit rate: ", fb)
+print("Bandwidth:    ", B)
+print("Eb/N0 (dB):   ", p2db(cnr*B/fb))
+
+# Extend the frame to exactly 1 second
+padding = [0]*int((44100-len(tones))/2)
+tones = np.concatenate([padding, tones, padding])
 tones += NOISE * gwn(len(tones))
 
-#fft = np.absolute(np.fft.rfft(tones))
+#fft = np.absolute(np.fft.rfft(tones))**2/len(tones) # This estimates PSD, power/hz
+fft = np.absolute(np.fft.rfft(tones))/np.sqrt(len(tones)) # Shows amplitude
+#print(np.average(fft))
 #plt.plot(fft)
 #plt.show()
 
