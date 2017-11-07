@@ -3,17 +3,12 @@
 
 import sys
 import numpy as np
-import math
-import random
-import matplotlib.pyplot as plt
 
 from lib import *
 
 AMP        = 0.03
 NOISE      = AMP*db2a(-100)
 DISTORTION = 1.0
-
-sys.argv.append("űű Hello World!")
 
 if len(sys.argv) < 2:
     print("Usage: send.py <message, at most 10 characters>")
@@ -49,5 +44,5 @@ fft = np.absolute(np.fft.rfft(tones))/np.sqrt(len(tones)) # Shows amplitude
 #plt.plot(tones)
 #plt.show()
 
-write_s16file("gwn-3db.s16", tones)
-#write_pyaudio(tones)
+#write_s16file("gwn-3db.s16", tones)
+write_pyaudio(tones)

@@ -17,8 +17,8 @@ oneAndHalfFrameLen = frameLen + halfFrameLen
 
 datalen = SYMBOL_LENGTH*len(syncBits)
 
-generator = s16_read(datalen, 'gwn-3db.s16')
-#generator = pyaudio_read(datalen)
+#generator = s16_read(datalen, 'gwn-3db.s16')
+generator = pyaudio_read(datalen)
 
 data = np.zeros(datalen*3)
 while True:
@@ -35,7 +35,7 @@ while True:
     corr = np.correlate(normalize(data[:datalen*2]), syncSig)
     signal_strength = np.max(corr)
 
-    if signal_strength > 1000:
+    if signal_strength > 2000:
         print("Got sync signal, decoding... ")
         chunk = generator.send(None)
         data[datalen*2:datalen*2+len(chunk)] = chunk
@@ -51,3 +51,4 @@ while True:
             print("NO DECODE.")
 
         data = np.zeros(datalen*3)
+
