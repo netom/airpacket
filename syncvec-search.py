@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-VECTOR_LEN = 200
+VECTOR_LEN = 400
 
 best_so_far = syncBits
 

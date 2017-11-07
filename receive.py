@@ -36,12 +36,10 @@ def sinBuf():
     tone = np.zeros(BUFFER, dtype=np.float32)
     for i in range(BUFFER):
         t = 2.0 * np.pi * i / float(RATE)
-        #tone[i] = np.sign(np.sin((4410 + s * 441) * t))
-        tone[i] = np.sin((4410 + 0 * 441) * t) * np.sqrt(2) # Make RMS = 1
+        tone[i] = np.sin(FREQ_OFFSET * t) * np.sqrt(2) # Make RMS = 1
     return tone
 
 def normalize(x):
-    #return x / np.max(np.abs(x))
     return x / np.sqrt(np.sum(np.abs(x)**2) / len(x))
 
 def decode_frame(f):
@@ -50,7 +48,7 @@ def decode_frame(f):
     j = 0
     ffts = []
     for i in range(len(syncBits)):
-        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER]*WINDOW(BUFFER))[10:28])
+        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER]*WINDOW(BUFFER))[FFT_OFFSET:FFT_OFFSET+17])
         #fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
         ffts.append(fft)
 

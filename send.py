@@ -13,9 +13,9 @@ from lib import *
 
 DEVICE = -1
 AMP    = 0.1
-NOISE  = AMP*db2a(3)
+NOISE  = AMP*db2a(8)
 
-sys.argv.append("hello")
+sys.argv.append("1234567 Hello World!")
 
 if len(sys.argv) < 2:
     print("Usage: send.py <message, at most 10 characters>")
@@ -28,8 +28,8 @@ for s in symbolList:
     tone = np.zeros(BUFFER, dtype=np.float32)
     for i in range(BUFFER):
         t = 2.0 * np.pi * i / float(RATE)
-        #tone[i] = AMP * np.sign(np.sin((4410 + s * 441) * t))
-        tone[i] = AMP * np.sin((4410 + s * 441) * t)
+        #tone[i] = AMP * np.sign(np.sin((FREQ_OFFSET + s * FREQ_STEP) * t))
+        tone[i] = AMP * np.sin((FREQ_OFFSET + s * FREQ_STEP) * t)
 
     tones = np.append(tones, tone)
 
@@ -37,8 +37,8 @@ for s in symbolList:
 pwrc = np.average(tones**2)
 pwrn = np.average((NOISE * gwn(len(tones)))**2)
 cnr  = pwrc / pwrn
-fb   = 160 * (44100 / len(tones)) # Channel data rate
-B    = 22050 # Bandwidth: whole audio spectrum
+fb   = 160 * (RATE / len(tones)) # Channel data rate
+B    = int(RATE/2) # Bandwidth: whole audio spectrum
 print("Carrier power:", pwrc)
 print("Noise power:  ", pwrn)
 print("CNR (dB):     ", p2db(cnr))
@@ -47,7 +47,7 @@ print("Bandwidth:    ", B)
 print("Eb/N0 (dB):   ", p2db(cnr*B/fb))
 
 # Extend the frame to exactly 1 second
-padding = [0]*int((44100-len(tones))/2)
+padding = [0]*int((RATE-len(tones))/2)
 tones = np.concatenate([padding, tones, padding])
 tones += NOISE * gwn(len(tones))
 
