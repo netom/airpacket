@@ -15,77 +15,33 @@ p = pyaudio.PyAudio()
 
 stream = p.open(
     input_device_index = DEVICE,
-    rate = RATE,
+    rate = SAMPLING_RATE,
     channels = 1,
     input = True,
     output = False,
-    frames_per_buffer = BUFFER,
+    frames_per_buffer = SYMBOL_LENGTH,
     format = pyaudio.paFloat32
 )
 
-halfbuf = int(BUFFER / 2)
+halfbuf = int(SYMBOL_LENGTH / 2)
 
-frameLen = len(syncBits) * BUFFER
+frameLen = len(syncBits) * SYMBOL_LENGTH
 #halfFrameLen = len(syncBits) * halfbuf
-halfFrameLen = 10*BUFFER
+halfFrameLen = 10*SYMBOL_LENGTH
 oneAndHalfFrameLen = frameLen + halfFrameLen
 
 data = np.array([0] * oneAndHalfFrameLen, dtype=np.float32)
-
-def sinBuf():
-    tone = np.zeros(BUFFER, dtype=np.float32)
-    for i in range(BUFFER):
-        t = 2.0 * np.pi * i / float(RATE)
-        tone[i] = np.sin(FREQ_OFFSET * t) * np.sqrt(2) # Make RMS = 1
-    return tone
-
-def normalize(x):
-    return x / np.sqrt(np.sum(np.abs(x)**2) / len(x))
-
-def decode_frame(f):
-    syms = []
-    erasures = []
-    j = 0
-    ffts = []
-    for i in range(len(syncBits)):
-        fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER]*WINDOW(BUFFER))[FFT_OFFSET:FFT_OFFSET+17])
-        #fft = np.absolute(np.fft.rfft(f[i*BUFFER:(i+1)*BUFFER])[10:28])
-        ffts.append(fft)
-
-        if syncBits[i] == 1:
-            continue
-
-        bestpos = np.argmax(fft)
-        best = fft[bestpos]
-
-        fft[bestpos] = 0
-
-        bestpos2 = np.argmax(fft)
-        best2 = fft[bestpos2]
-
-        syms.append(bestpos)
-
-        #if best-best2 < 0.09: # Colud be much smarter. Also: soft decode.
-        #    erasures.append(j)
-        #j += 1
-
-    #print(len(erasures))
-    #plt.imshow(ffts)
-    #plt.show()
-    return (syms, erasures)
-
-syncSig = np.concatenate(list(map(lambda x: sinBuf()*x, syncBits)))
 
 data = np.fromfile("gwn-3db.s16", dtype=np.int16).astype(np.float32) / 0x7fff
 
 corr = np.correlate(normalize(data), syncSig)
 signal_strength = np.max(corr)
 best_pos = np.argmax(corr)
-#best_pos = 2050
+
 print(signal_strength, best_pos)
 
-ns, erasures = decode_frame(data[best_pos:best_pos+len(syncSig)])
-f = nibbles2str(ns, erasures)
+nibbles, erasures = receive_frame(data[best_pos:best_pos+len(syncSig)])
+f = nibbles2str(nibbles, erasures)
 if f != '':
     print("DECODED: >>>>>>>> " + f + " <<<<<<<<")
 else:
@@ -93,8 +49,7 @@ else:
 
 exit()
 
-
-datalen = BUFFER*len(syncBits)
+datalen = SYMBOL_LENGTH*len(syncBits)
 def read_data():
     return np.fromstring(
         stream.read(datalen),

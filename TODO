@@ -1,8 +1,7 @@
 Sprints:
 
 1
-* Factor out signal generation and reception
-* Abstract data input and output: file, pyaudio
+* Abstract data input: file, pyaudio
 * Make a simple command line tool to send and receive data (string and hex)
 
 2

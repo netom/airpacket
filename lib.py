@@ -1,13 +1,27 @@
-import unireedsolomon as urs
 import numpy as np
+import pyaudio
+import time
+import unireedsolomon as urs
 
-RATE   = 44100
-BUFFER = 200
+# Audio sampling rate
+SAMPLING_RATE   = 44100
 
+# Length of a symbol in audio samples.
+# Must divide SAMPLING_RATE with zero remainder 
+SYMBOL_LENGTH = 200
+
+# The lowest frequency in a symbol
 FREQ_OFFSET = 4410
-FREQ_STEP   = int(RATE/BUFFER) # 1 fft bin
+FREQ_STEP   = int(SAMPLING_RATE/SYMBOL_LENGTH) # 1 fft bin
 FFT_OFFSET  = int(FREQ_OFFSET/FREQ_STEP)
 
+# Number of requencies to use. This cannot be modified easily,
+# since the decoding process makes the assumption that a nibble
+# is encoded in a single symbol.
+CPMSK_N = 17
+
+# Experimental 400 symbol long sync sequence
+# 400 nibbles, 194 data nibbles, 206 sync nibbles -> 97 bytes
 """syncBits = [1, 1, -1, -1, -1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 
 -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, 1, -1, -1, 1, 
 1, 1, 1, -1, -1, 1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, 1, 1, 1, 1, 
@@ -28,8 +42,12 @@ FFT_OFFSET  = int(FREQ_OFFSET/FREQ_STEP)
 -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 
 1, -1, -1, -1, 1, 1, -1, -1, 1, 1, 1, -1, -1, -1, -1, 1, -1, 1, 1, -1, 
 -1, -1, -1, -1, 1, -1, 1, 1, 1, -1, 1, 1, -1, -1, -1, -1, -1]
-# 400 nibbles, 194 data nibbles, 206 sync nibbles"""
+LEN_CODE = 97
+LEN_PAYLOAD = 20
+"""
 
+# Experimental 200 symbol long sync sequence
+# 200 nibbles, 108 data nibbles, 92 sync nibbles -> 54 bytes
 syncBits = [1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1, 
 1, -1, -1, -1, 1, -1, -1, 1, -1, -1, 1, -1, -1, -1, 1, 1, -1, 1, 1, 1, 
 -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, 
@@ -40,33 +58,21 @@ syncBits = [1, 1, 1, -1, -1, 1, 1, -1, -1, 1, 1, -1, 1, -1, -1, 1, 1,
 1, -1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, -1, -1, 1, -1, 1, 1, 
 -1, 1, 1, -1, 1, -1, 1, 1, -1, -1, 1, -1, -1, -1, -1, -1, -1, -1, -1, 
 -1, 1, 1, -1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, 1, -1, 1, -1, -1, 1, 
-1, -1, -1, 1] # 200 nibbles, 108 data nibbles, 92 sync nibbles -> 54 bytes
-
-# Shorter code
+1, -1, -1, 1]
 LEN_CODE    = 54
 LEN_PAYLOAD = 20
 
-# Longer code
-#LEN_CODE = 97
-#LEN_PAYLOAD = 20
 
-code = urs.rs.RSCoder(LEN_CODE, LEN_PAYLOAD) # 20 payload bytes, 34 additional bytes
-
-symbols = list(range(17))
-
-#print(len(syncBits))
-#print(sum(map(lambda x: 1 if x == -1 else 0, syncBits)))
-#print(sum(map(lambda x: 1 if x == 1 else 0, syncBits)))
-
-def str2nibbles(s):
+def nibbles(s):
+    """Chops up an iterable of int-ables to nibbles"""
     ns = []
     for c in s:
-        ns.append((ord(c) & 0x0f))
-        ns.append((ord(c) >> 4))
+        ns.append((int(c) & 0x0f))
+        ns.append((int(c) >> 4))
     return ns
 
 def str2frame(s):
-    raw = str2nibbles(code.encode(s.rjust(LEN_PAYLOAD)))
+    raw = nibbles(code.encode(bytes(s, 'UTF-8').ljust(LEN_PAYLOAD), return_string=False))
     ret = []
     i = 0
     for b in syncBits:
@@ -81,12 +87,13 @@ def nubsync(f):
     return list(map(lambda x: x[1], filter(lambda x: x[0] == -1, zip(syncBits, f))))
 
 def nibbles2str(f, erasures = []):
-    s = ''
+    b = b''
     for i in range(0, len(f), 2):
         o = max(0, min((f[i]-1) + (f[i+1]-1)*16, 0xff))
-        s += chr(o)
+        b += bytes([o])
     try:
-        return code.decode(s, erasures)[0].strip()
+        decoded = bytes(map(int, code.decode(b, erasures, return_string=False)[0]))
+        return str(decoded, 'UTF-8').strip()
     except urs.rs.RSCodecError:
         return ''
 
@@ -105,5 +112,94 @@ def a2db(a):
 def p2db(a):
     """Returns decibel of power ratio"""
     return 10.0*np.log10(a)
+
+def write_s16file(fname, f32data):
+    (f32data*0x7fff).astype(np.int16).tofile(fname)
+
+def write_pyaudio(f32data, device=-1):
+    p = pyaudio.PyAudio()
+
+    stream = p.open(
+        output_device_index = device,
+        format = pyaudio.paFloat32,
+        channels = 1,
+        rate = SAMPLING_RATE,
+        input = False,
+        output = True,
+        frames_per_buffer = SYMBOL_LENGTH
+    )
+
+    stream.write(f32data.astype(np.float32).tostring(), len(f32data))
+
+    time.sleep(len(f32data)/float(SAMPLING_RATE)*0.5)
+
+    stream.stop_stream()
+    stream.close()
+
+    p.terminate()
+
+def sinBuf():
+    tone = np.zeros(SYMBOL_LENGTH, dtype=np.float32)
+    for i in range(SYMBOL_LENGTH):
+        t = 2.0 * np.pi * i / float(SAMPLING_RATE)
+        tone[i] = np.sin(FREQ_OFFSET * t)
+    return tone
+
+def normalize(x):
+    return x / np.sqrt(np.sum(np.abs(x)**2) / len(x))
+
+def symbols2tones(symbolList, amplitude=1.0, distortion=1.0):
+    tones = np.zeros(SYMBOL_LENGTH*len(symbolList), dtype=np.float32)
+    for j in range(len(symbolList)):
+        s = symbolList[j]
+        for i in range(SYMBOL_LENGTH):
+            t = 2.0 * np.pi * i / float(SAMPLING_RATE)
+            tones[SYMBOL_LENGTH*j+i] = np.clip(distortion * amplitude * np.sin((FREQ_OFFSET + s * FREQ_STEP) * t), -amplitude, amplitude)
+
+    return tones
+
+def receive_frame(frame, dft_window = None):
+    syms = []
+    erasures = []
+    j = 0
+    ffts = []
+    for i in range(len(syncBits)):
+        if dft_window != None:
+            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]*dft_window(SYMBOL_LENGTH))[FFT_OFFSET:FFT_OFFSET+CPMSK_N+1])
+        else:
+            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]                          )[FFT_OFFSET:FFT_OFFSET+CPMSK_N+1])
+        ffts.append(fft)
+
+        if syncBits[i] == 1:
+            continue
+
+        bestpos = np.argmax(fft)
+        best = fft[bestpos]
+
+        fft[bestpos] = 0
+
+        bestpos2 = np.argmax(fft)
+        best2 = fft[bestpos2]
+
+        syms.append(bestpos)
+
+        #if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
+        #    erasures.append(j)
+        #j += 1
+
+    #print(len(erasures))
+    #plt.imshow(ffts)
+    #plt.show()
+    return (syms, erasures)
+
+code = urs.rs.RSCoder(LEN_CODE, LEN_PAYLOAD)
+
+symbols = list(range(CPMSK_N))
+
+syncSig = normalize(np.concatenate(list(map(lambda x: sinBuf()*x, syncBits))))
+
+#print(len(syncBits))
+#print(sum(map(lambda x: 1 if x == -1 else 0, syncBits)))
+#print(sum(map(lambda x: 1 if x == 1 else 0, syncBits)))
 
 #print(nibbles2str(nubsync(str2frame('Hello World!'))))
