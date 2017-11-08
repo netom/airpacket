@@ -1,11 +1,7 @@
 Sprints:
 
-3
-* Make a script that generates lot of data files.
-    * message, frame position, snr in the file name
-* Make a script that scores the performance of the decode and frame positioning
-
 5
+* Make a script that scores the performance of the decode and frame positioning
 * Benchmarks
 * Tests
 

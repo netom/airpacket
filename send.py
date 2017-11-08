@@ -97,20 +97,15 @@ else:
 fb    = 160 * (SAMPLING_RATE / len(tones)) # Channel data rate
 B     = int(SAMPLING_RATE/2) # Bandwidth: whole audio spectrum
 
-print("Carrier power:", pwrc)
-print("Noise power:  ", pwrn)
-print("CNR (dB):     ", p2db(cnr))
-print("Net bit rate: ", fb)
-print("Bandwidth:    ", B)
-print("Eb/N0 (dB):   ", p2db(cnr*B/fb))
-
 # Extend the frame to exactly 1 second
 padding_len = int((SAMPLING_RATE-len(tones))/2)
 padding1 = noise_amp * gwn(padding_len)
 padding2 = noise_amp * gwn(padding_len)
 tones = normalize(np.concatenate([padding1, tones+noise, padding2]), args.rms)
 
-print("Peak:         ", np.max(np.abs(tones)))
+print("CNR (dB):   ", p2db(cnr))
+print("Eb/N0 (dB): ", p2db(cnr*B/fb))
+print("Peak:       ", np.max(np.abs(tones)))
 
 if args.file:
     write_s16file(tones, args.file)
