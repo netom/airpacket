@@ -7,7 +7,7 @@ import numpy as np
 
 from lib import *
 
-AMPDEFAULT=0.15
+RMS_DEFAULT=0.2
 
 parser = argparse.ArgumentParser(
     description='Create a modulated packet that encodes a string or hex symbols.'
@@ -28,10 +28,10 @@ parser.add_argument(
     help='Write into file instead of playing the audio.'
 )
 parser.add_argument(
-    '-a', '--amp',
-    metavar='AMP',
-    default=AMPDEFAULT, type=float,
-    help='Average amplitude of signal plus noise. Default is %.3f' % AMPDEFAULT
+    '-r', '--rms',
+    metavar='RMS',
+    default=RMS_DEFAULT, type=float,
+    help='The root mean square of the generated signal plus noise. Default is %.3f' % RMS_DEFAULT
 )
 parser.add_argument(
     '-s', '--snr',
@@ -73,26 +73,27 @@ else:
         msg += bytes([ord(c)])
     msg = msg.ljust(LEN_PAYLOAD)
 
-signal_amp = args.amp
-noise_amp  = 0
-if args.snr != None:
-    alpha      = np.sqrt(db2a(args.snr))
-    signal_amp = args.amp * alpha
-    noise_amp  = args.amp / alpha
-
 if len(sys.argv) < 2:
     print("Usage: send.py <message, at most 10 characters>")
     exit()
 
+signal_amp = 1.0
+noise_amp  = 0.0
+if args.snr:
+    noise_amp = db2a(-args.snr)
+
 symbolList = bytes2symbols(msg)
 
-tones = symbols2tones(symbolList, signal_amp, args.distortion)
+tones = symbols2tones(symbolList, 1, args.distortion)
 
 # Calculate (estimate) carrier power, noise power, carrier to noise ratio, Eb/N0 (assuming unit impedance)
 noise = noise_amp * gwn(len(tones))
 pwrc  = np.average(tones**2)
 pwrn  = np.average(noise**2)
-cnr   = pwrc / pwrn
+if pwrn == 0:
+    cnr = float('inf')
+else:
+    cnr   = pwrc / pwrn
 fb    = 160 * (SAMPLING_RATE / len(tones)) # Channel data rate
 B     = int(SAMPLING_RATE/2) # Bandwidth: whole audio spectrum
 
@@ -104,9 +105,10 @@ print("Bandwidth:    ", B)
 print("Eb/N0 (dB):   ", p2db(cnr*B/fb))
 
 # Extend the frame to exactly 1 second
-padding = [0]*int((SAMPLING_RATE-len(tones))/2)
-tones = np.concatenate([padding, tones, padding])
-tones += noise_amp * gwn(len(tones))
+padding_len = int((SAMPLING_RATE-len(tones))/2)
+padding1 = noise_amp * gwn(padding_len)
+padding2 = noise_amp * gwn(padding_len)
+tones = normalize(np.concatenate([padding1, tones+noise, padding2]), args.rms)
 
 print("Peak:         ", np.max(np.abs(tones)))
 

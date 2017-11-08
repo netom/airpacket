@@ -23,7 +23,7 @@ parser.add_argument(
 parser.add_argument(
     '-d', '--device',
     metavar='DEVICE', default=-1, type=int,
-    help='PyAudio device index. Use devices.py to get a list of devices. THe default is -1, the system-wide default device.'
+    help='PyAudio device index. Use devices.py to get a list of devices. The default is -1, the system-wide default device.'
 )
 parser.add_argument(
     '-e', '--exit-after-success',
@@ -46,11 +46,11 @@ while True:
 
     chunk = generator.send(None)
 
-    if len(chunk) < datalen:
+    if len(chunk) == 0:
         print("End of data stream reached, terminating")
         exit(1)
 
-    data[datalen:datalen*2] = chunk
+    data[datalen:datalen+len(chunk)] = chunk
 
     corr = np.correlate(normalize(data[:datalen*2]), syncSig)
     signal_strength = np.max(corr)

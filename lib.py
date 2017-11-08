@@ -12,7 +12,7 @@ SYMBOL_LENGTH = 200
 
 # The lowest frequency in a symbol
 FREQ_OFFSET = 4410
-FREQ_STEP   = int(SAMPLING_RATE/SYMBOL_LENGTH) # 1 fft bin
+FREQ_STEP   = SAMPLING_RATE/SYMBOL_LENGTH # 1 fft bin
 FFT_OFFSET  = int(FREQ_OFFSET/FREQ_STEP)
 
 # Number of requencies to use. This cannot be modified easily,
@@ -142,8 +142,8 @@ def sinBuf():
         tone[i] = np.sin(FREQ_OFFSET * t)
     return tone
 
-def normalize(x):
-    return x / np.sqrt(np.sum(np.abs(x)**2) / len(x))
+def normalize(x, rms=1.0):
+    return x / np.sqrt(np.sum(np.abs(x)**2) / len(x)) * rms
 
 def symbols2tones(symbolList, amplitude=1.0, distortion=1.0):
     tones = np.zeros(SYMBOL_LENGTH*len(symbolList), dtype=np.float32)
@@ -214,7 +214,6 @@ def s16_read(samples, filename):
     while True:
         yield data[i*samples:(i+1)*samples]
         i += 1
-        # TODO: EOF handling
 
 code = urs.rs.RSCoder(LEN_CODE, LEN_PAYLOAD)
 
