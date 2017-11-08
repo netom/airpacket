@@ -36,7 +36,7 @@ parser.add_argument(
 parser.add_argument(
     '-s', '--snr',
     metavar='SNR', type=float,
-    help='Signal to noise amplitude ratio (SNR), expressed in decibels amplitude. Adds white noise.'
+    help='Signal to noise amplitude ratio (SNR), expressed in decibels signal amplitude / white noise standard deviation.'
 )
 parser.add_argument(
     '-t', '--distortion',
