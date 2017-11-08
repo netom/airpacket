@@ -2,7 +2,6 @@ Sprints:
 
 2
 * Make a waterfall graph tool
-* Make a playback tool (sox)
 * Make a script that generates lot of data files.
     * message, frame position, snr in the file name
 
