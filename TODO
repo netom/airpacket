@@ -5,9 +5,6 @@ Sprints:
     * message, frame position, snr in the file name
 * Make a script that scores the performance of the decode and frame positioning
 
-4
-* Improve performance
-
 5
 * Benchmarks
 * Tests
@@ -26,4 +23,5 @@ Sprints:
     * Benchmark results
     * Real life testing
     * Possible ways to improve
+        * Performance: integer arithmetic
     * Code documentation

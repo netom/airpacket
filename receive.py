@@ -40,7 +40,7 @@ if args.file:
 else:
     generator = pyaudio_read(datalen, args.device)
 
-data = np.zeros(datalen*2)
+data = np.zeros(datalen*2, dtype=np.float32)
 datapos = 0
 while True:
     data[:datalen] = data[datalen:]
