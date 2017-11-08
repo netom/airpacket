@@ -19,6 +19,7 @@ Sprints:
 6-7
 * Write a report
     * Overview
+        * Goals, scope
     * Design
         * Fixed frame format. Frequency is known, position is not
         * Frame synchronisation

@@ -7,7 +7,7 @@ import numpy as np
 
 from lib import *
 
-RMS_DEFAULT=0.2
+RMS_DEFAULT=0.17
 
 parser = argparse.ArgumentParser(
     description='Create a modulated packet that encodes a string or hex symbols.'
@@ -79,7 +79,7 @@ if len(sys.argv) < 2:
 
 signal_amp = 1.0
 noise_amp  = 0.0
-if args.snr:
+if args.snr != None:
     noise_amp = db2a(-args.snr)
 
 symbolList = bytes2symbols(msg)
