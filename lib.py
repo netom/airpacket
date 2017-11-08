@@ -208,8 +208,11 @@ def pyaudio_read(samples, device=-1):
             dtype=np.float32
         )
 
+def s16_read_all(filename, offset=0):
+    return (np.fromfile(filename, dtype=np.int16).astype(np.float32) / 0x7fff)[offset:]
+
 def s16_read(samples, filename):
-    data = np.fromfile(filename, dtype=np.int16).astype(np.float32) / 0x7fff
+    data = s16_read_all(filename)
     i = 0
     while True:
         yield data[i*samples:(i+1)*samples]
