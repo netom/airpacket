@@ -113,7 +113,7 @@ tones = normalize(np.concatenate([padding1, tones+noise, padding2]), args.rms)
 print("Peak:         ", np.max(np.abs(tones)))
 
 #fft = np.absolute(np.fft.rfft(tones))**2/len(tones) # This estimates PSD, power/hz
-fft = np.absolute(np.fft.rfft(tones))/np.sqrt(len(tones)) # Shows amplitude
+#fft = np.absolute(np.fft.rfft(tones))/np.sqrt(len(tones)) # Shows amplitude
 #print(np.average(fft))
 #plt.plot(tones)
 #plt.show()
