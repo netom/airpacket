@@ -40,9 +40,11 @@ if args.file:
 else:
     generator = pyaudio_read(datalen, args.device)
 
-data = np.zeros(datalen*3)
+data = np.zeros(datalen*2)
+datapos = 0
 while True:
-    data[:datalen] = data[datalen:datalen*2]
+    data[:datalen] = data[datalen:]
+    datapos = datalen
 
     chunk = generator.send(None)
 
@@ -50,33 +52,29 @@ while True:
         print("End of data stream reached, terminating")
         exit(1)
 
-    data[datalen:datalen+len(chunk)] = chunk
+    data[datapos:datapos+len(chunk)] = chunk
+    datapos = datapos+len(chunk)
 
-    corr = np.correlate(normalize(data[:datalen*2]), syncSig)
+    corr = np.correlate(normalize(data[:datapos]), syncSig)
     signal_strength = np.max(corr)
+    best_pos = np.argmax(corr)
 
-    if signal_strength > 2000:
-        print("Got sync signal, decoding... ")
-        chunk = generator.send(None)
-        data[datalen*2:datalen*2+len(chunk)] = chunk
-        corr = np.correlate(normalize(data), syncSig)
-        signal_strength = np.max(corr)
-        best_pos = np.argmax(corr)
+    if signal_strength < 2000:
+        continue
 
-        ns, erasures = receive_frame(data[best_pos:best_pos+len(syncSig)])
-        try:
-            bs = nibbles2bytes(ns, erasures)
-            if args.hex:
-                msg = ''
-                for b in bs:
-                    msg += "{:02x}".format(b)
-            else:
-                msg = str(bs, 'ASCII').strip()
-            print("DECODED: >>> " + msg + " <<<")
-            if args.exit_after_success:
-                exit(0)
-        except urs.rs.RSCodecError:
-            print("NO DECODE.")
+    print("Got sync signal, decoding... ")
 
-        data = np.zeros(datalen*3)
-
+    ns, erasures = receive_frame(normalize(data[best_pos:best_pos+len(syncSig)]))
+    try:
+        bs = nibbles2bytes(ns, erasures)
+        if args.hex:
+            msg = ''
+            for b in bs:
+                msg += "{:02x}".format(b)
+        else:
+            msg = str(bs, 'ASCII').strip()
+        print("DECODED: >>> " + msg + " <<<")
+        if args.exit_after_success:
+            exit(0)
+    except urs.rs.RSCodecError:
+        print("NO DECODE.")
