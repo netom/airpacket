@@ -33,9 +33,9 @@ parser.add_argument(
     help='The root mean square of the generated signal plus noise. Default is %.3f' % RMS_DEFAULT
 )
 parser.add_argument(
-    '-s', '--snr',
-    metavar='SNR', type=float,
-    help='Signal to noise amplitude ratio (SNR), expressed in decibels signal amplitude / white noise standard deviation.'
+    '-c', '--cnr',
+    metavar='CNR', type=float,
+    help='Carrier power to 22.05KHz band-limited white noise power ratio.'
 )
 parser.add_argument(
     '-t', '--distortion',
@@ -74,8 +74,8 @@ else:
 
 signal_amp = 1.0
 noise_amp  = 0.0
-if args.snr != None:
-    noise_amp = db2a(-args.snr)
+if args.cnr != None:
+    noise_amp = db2a(-args.cnr-3) # GWNASD -> Power
 
 symbolList = bytes2symbols(msg)
 

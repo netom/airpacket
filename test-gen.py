@@ -11,7 +11,7 @@ RMS=0.17
 
 def gen_file(msg, snr, fname):
     signal_amp = 1.0
-    noise_amp = db2a(-snr)
+    noise_amp = db2a(-snr-3) # GWNASD -> Power
 
     symbolList = bytes2symbols(bytes.fromhex(msg))
 
@@ -21,7 +21,7 @@ def gen_file(msg, snr, fname):
 
     write_s16file(normalize(tones, RMS), fname)
 
-for i, snr in tqdm([(i, snr) for i in range(1000) for snr in range(-10, 4)]):
+for i, snr in tqdm([(i, snr) for i in range(1000) for snr in range(-14, 0)]):
     msg = ''.join(random.choice(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f']) for _ in range(40))
     fname = "data/{}_{}.s16".format(msg, snr)
     gen_file(msg, snr, fname)
