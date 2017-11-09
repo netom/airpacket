@@ -25,6 +25,9 @@ for fname in tqdm(os.listdir('data')):
     msg, snr = fname.split('.')[0].split('_')
     snr = int(snr)
 
+    #if snr != 1:
+    #    continue
+
     plus(files, snr)
 
     fname = 'data/' + fname

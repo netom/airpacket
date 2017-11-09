@@ -13,14 +13,14 @@ Sprints:
         * Forward error correction
         * Message encoding
     * Script usage
-        * Signal amplitude / white noise standard disribution ~= CNR-3dB
+        * Signal amplitude / white noise amplitude standard deviation ~= CNR+3dB
     * Benchmarking
     * Benchmark results
-        FILES:         {-9: 1000, -5: 1000, -6: 1000, -10: 1000, -4: 1000, -3: 1000, -7: 1000, -8: 1000}
-        GOOD DECODES:  {-9: 771, -5: 996, -6: 995, -10: 49, -4: 996, -3: 995, -7: 1000, -8: 994}
-        NO DECODES:    {-10: 951, -9: 226}
-        BAD DECODES:   {-8: 6, -6: 5, -4: 4, -9: 3, -3: 5, -5: 4}
-        GOOD SYNCS:    {-9: 994, -5: 1000, -6: 1000, -10: 988, -4: 1000, -3: 1000, -7: 1000, -8: 999}
+        FILES:         {-9: 1000, -5: 1000, -6: 1000, -10: 1000, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 1000}
+        GOOD DECODES:  {-9: 843, -5: 1000, -6: 1000, -10: 100, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 1000}
+        NO DECODES:    {-10: 900, -9: 157}
+        BAD DECODES:   {}
+        GOOD SYNCS:    {-9: 994, -5: 1000, -6: 1000, -10: 988, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 999}
         BAD SYNCS:     {-9: 6, -10: 12, -8: 1}
         BAD SYNC SET:  {2040, 2060}
     * Real life testing

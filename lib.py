@@ -91,7 +91,7 @@ def nibbles2bytes(ns, erasures = []):
     for i in range(0, len(ns), 2):
         o = max(0, min((ns[i]-1) + (ns[i+1]-1)*16, 0xff))
         b += bytes([o])
-    decoded = bytes(map(int, code.decode(b, erasures, return_string=False)[0]))
+    decoded = bytes(map(int, code.decode(b, nostrip=True, erasures_pos=erasures, return_string=False)[0]))
     return decoded
 
 def gwn(size, std=1, mean=0):
@@ -162,9 +162,9 @@ def receive_frame(frame, dft_window = None):
     ffts = []
     for i in range(len(syncBits)):
         if dft_window != None:
-            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]*dft_window(SYMBOL_LENGTH))[FFT_OFFSET:FFT_OFFSET+CPMSK_N+1])
+            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]*dft_window(SYMBOL_LENGTH))[FFT_OFFSET+1:FFT_OFFSET+CPMSK_N])
         else:
-            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]                          )[FFT_OFFSET:FFT_OFFSET+CPMSK_N+1])
+            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]                          )[FFT_OFFSET+1:FFT_OFFSET+CPMSK_N])
         ffts.append(fft)
 
         if syncBits[i] == 1:
@@ -178,7 +178,7 @@ def receive_frame(frame, dft_window = None):
         bestpos2 = np.argmax(fft)
         best2 = fft[bestpos2]
 
-        syms.append(bestpos)
+        syms.append(bestpos+1)
 
         #if best-best2 < 0.1: # Colud be much smarter. Also: soft decode.
         #    erasures.append(j)
@@ -228,4 +228,4 @@ syncSig = normalize(np.concatenate(list(map(lambda x: sinBuf()*x, syncBits))))
 #print(sum(map(lambda x: 1 if x == -1 else 0, syncBits)))
 #print(sum(map(lambda x: 1 if x == 1 else 0, syncBits)))
 
-#print(nibbles2str(nubsync(str2frame('Hello World!'))))
+#print(nibbles2bytes(nubsync(bytes2symbols(b'Hello World!'))))
