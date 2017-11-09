@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# n=105-re a PSL=-26.4444 egy papírban. Nem rossz.
-
 import math
 import numpy
 import random
@@ -10,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from lib import *
 
-VECTOR_LEN = 400
+VECTOR_LEN = 200
 
 best_so_far = syncBits
 
