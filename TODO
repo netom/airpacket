@@ -1,9 +1,7 @@
 Sprints:
 
 5
-* Make a script that scores the performance of the decode and frame positioning
-* Benchmarks
-* Tests
+* Real life Tests
 
 6-7
 * Write a report
@@ -15,8 +13,16 @@ Sprints:
         * Forward error correction
         * Message encoding
     * Script usage
+        * Signal amplitude / white noise standard disribution ~= CNR-3dB
     * Benchmarking
     * Benchmark results
+        FILES:         {-9: 1000, -5: 1000, -6: 1000, -10: 1000, -4: 1000, -3: 1000, -7: 1000, -8: 1000}
+        GOOD DECODES:  {-9: 771, -5: 996, -6: 995, -10: 49, -4: 996, -3: 995, -7: 1000, -8: 994}
+        NO DECODES:    {-10: 951, -9: 226}
+        BAD DECODES:   {-8: 6, -6: 5, -4: 4, -9: 3, -3: 5, -5: 4}
+        GOOD SYNCS:    {-9: 994, -5: 1000, -6: 1000, -10: 988, -4: 1000, -3: 1000, -7: 1000, -8: 999}
+        BAD SYNCS:     {-9: 6, -10: 12, -8: 1}
+        BAD SYNC SET:  {2040, 2060}
     * Real life testing
     * Possible ways to improve
         * Performance: integer arithmetic

@@ -2,7 +2,6 @@
 # -*- coding: utf8 -*-
 
 import argparse
-import sys
 import numpy as np
 
 from lib import *
@@ -72,10 +71,6 @@ else:
             exit()
         msg += bytes([ord(c)])
     msg = msg.ljust(LEN_PAYLOAD)
-
-if len(sys.argv) < 2:
-    print("Usage: send.py <message, at most 10 characters>")
-    exit()
 
 signal_amp = 1.0
 noise_amp  = 0.0
