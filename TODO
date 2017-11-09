@@ -9,21 +9,38 @@ Sprints:
         * Goals, scope
     * Design
         * Fixed frame format. Frequency is known, position is not
+        * Stationary receiver and transmitter: no doppler expected
+        * Multipath can be a problem: longer symbol lengths to combar ISI
         * Frame synchronisation
+            * Phase coherent carrier detection
+            * 
         * Forward error correction
         * Message encoding
     * Script usage
         * Signal amplitude / white noise amplitude standard deviation ~= CNR+3dB
     * Benchmarking
     * Benchmark results
-        FILES:         {-9: 1000, -5: 1000, -6: 1000, -10: 1000, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 1000}
-        GOOD DECODES:  {-9: 843, -5: 1000, -6: 1000, -10: 100, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 1000}
-        NO DECODES:    {-10: 900, -9: 157}
+        FILES:         {-5: 1000, -3: 1000, -4: 1000, -14: 1000, -12: 1000, -9: 1000, -7: 1000, -13: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 1000}
+        GOOD DECODES:  {-5: 1000, -3: 1000, -4: 1000, -12: 834, -9: 1000, -7: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999, -13: 103}
+        NO DECODES:    {-14: 1000, -13: 897, -12: 166, -11: 1}
         BAD DECODES:   {}
-        GOOD SYNCS:    {-9: 994, -5: 1000, -6: 1000, -10: 988, 2: 1000, -4: 1000, 0: 1000, -2: 1000, -1: 1000, 3: 1000, -3: 1000, -7: 1000, 1: 1000, -8: 999}
-        BAD SYNCS:     {-9: 6, -10: 12, -8: 1}
+        GOOD SYNCS:    {-5: 1000, -3: 1000, -4: 1000, -14: 980, -12: 999, -9: 1000, -7: 1000, -13: 990, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999}
+        BAD SYNCS:     {-13: 10, -14: 20, -12: 1, -11: 1}
         BAD SYNC SET:  {2040, 2060}
+        * Carrier can be recovered correctly almost all the time
+        * High code rate: no false decodes were seen, chances of one is infinitesimal
+        * Cliff effect: 99.9% at -11dB 83.4% at -12dB, 10% at -13dB 0% at -14dB
+            * Cliff edge is at ~-11dB CNR => 10dB Eb/N0 (22.05KHz bandwidth)
+            
     * Real life testing
     * Possible ways to improve
-        * Performance: integer arithmetic
+        * Coherent detection of data symbols might be possible (measurements are needed, 1-2dB gain)
+            * Might be impossible due to transmitter or channel nonlinearities
+        * Fine-tune sync signal: few more error correcting bits (only a fraction of a dB gain)
+        * Use soft-decision decoding
+            * License a Koetter-Vardy soft decision decoder: ~2dB (might not be viable financialy)
+            * Franke-Taylor soft decoding: ~2dB gain (probably the simplest way)
+            * Use a concatenation of an inner convolutional code and an outer RS code
+            * Use LDPC codes and Belief Propagation for decoding
+                * An outer RS layer might required to combat error floor
     * Code documentation
