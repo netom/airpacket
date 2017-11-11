@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 import argparse
+import math
 import numpy as np
 import unireedsolomon as urs
 
@@ -59,7 +60,7 @@ while True:
     signal_strength = np.max(corr)
     best_pos = np.argmax(corr)
 
-    if signal_strength < 2000:
+    if math.isnan(signal_strength) or signal_strength < 2000:
         continue
 
     print("Got sync signal, decoding... ")

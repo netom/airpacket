@@ -29,10 +29,22 @@ parser.add_argument(
     default=0, type=int,
     help='Skip this many samples at the beginning of the file'
 )
+parser.add_argument(
+    '-y', '--sync',
+    default=False, const=True, action='store_const',
+    help='Try to synchronize to a packet'
+)
+
 
 args = parser.parse_args()
 
 data = s16_read_all(args.file, args.offset)
+
+if args.sync:
+    corr = np.correlate(normalize(data), syncSig)
+    signal_strength = np.max(corr)
+    best_pos = np.argmax(corr)
+    data = data[best_pos:best_pos+len(syncSig)]
 
 if args.spectrum:
     fft = np.absolute(np.fft.rfft(data))/np.sqrt(len(data))
