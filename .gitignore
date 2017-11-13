@@ -1,3 +1,7 @@
 *.pyc
 __pycache__
 *.s16
+*.aux
+*.log
+*.out
+*.pdf

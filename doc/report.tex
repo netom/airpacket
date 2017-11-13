@@ -1,0 +1,145 @@
+\documentclass[a4paper]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{hyperref}
+
+\title{Experimental atmospheric data transmission method using audio frequencies}
+
+\author{FÁBIÁN Tamás László}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+I describe here a method for transmitting and receiving 20 bytes of data using audio frequencies. The audio is propagated between a speaker and a microphone in air.
+
+The method uses 17 tones and continuous-phase frequency-shift keying. Frame synchronization is achieved by using the lowest tone to transmit a sequence with low acyclic autocorrelation, and near 50\% duty cycle. The remaining 16 tones encode 4 bits per symbol. Reed-Solomon code RS\(54,20\) is applied before modulation, to yield the 54 byte payload. The payload then translated to 16-tone symbols and interleaved with the 17th synchronization tone.
+
+On the receiving end, the demodulator uses correlation to find a transmitted frame. The 16 tone data symbols are decoded non-coherently, using Fast Fourier Transformation, and choosing the FFT bucket with the largest power. The symbols then transformed to half-bytes (or \textit{nibbles}). The received nibbles then assembled to bytes, and decoded using RS(54,20).
+
+A software was written in the Python language for experimental and demonstration purposes. Scripts are provided to send and receive short text messages using the computer's audio devices, or to read/write the audio to/from data files. The files can be played back, or converted into more traditional audio formats using sox\cite{sox1}
+
+A framework was established to gauge the performance of the software. A script can generate random messages and save them into audio files with various level of white noise. An other script then can be used to attempt decoding these files. At the end of the experiment, various statistics are shown.
+
+Simulations show that this method can transmit data 99.9\% accurately at a carrier to noise ratio (CNR) of -11dB (or at about 9.9dB $E_b/N_0$) measured over 22.05 KHz bandwidth, and with 83.4\% accuracy at -12dB CNR (about 8.9dB $E_b/N_0$).
+
+In real-world experiment using a small set of consumer-grade computer audio devices I could achieve reliable data transfer over 1 meter in a quiet room at quite low volume levels. Noisy environments mandate higher volume setting and/or shorter distances.
+\section{Theory of Operation}
+\subsection{Design considerations}
+\subsection{Modulation and Demodulation}
+\subsection{Synchronization}
+\subsection{Forward Error Correction}
+\section{The Software}
+\label{sec:thesoftware}
+
+\subsection{Prerequisites}
+
+Have a microphone and speaker
+
+Install Python 3.6 with Anaconda.\cite{ana1}
+
+\subsection{Installation}
+
+Install portaudio
+...
+
+Install files from requirements.txt
+
+\subsection{Experiment setup}
+Configure one or two computers, sending from other devices
+\subsection{Sending or saving messages}
+\subsection{Receiving or loading messages}
+\subsection{Recording audio}
+\subsection{Playing saved audio}
+\subsection{Observing saved audio waveforms and spectra}
+\subsection{Generating test files}
+\subsection{Scoring performance on a test file set}
+\subsection{Generating synchronization vectors}
+
+\section{Experimental results}
+\subsection{Experimental set-ups}
+* Quiet room
+* Noisy street
+* Noisy restaurant
+\subsection{Results}
+Equipment, distances vs. volume levels
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{raw_data.png}
+\caption{\label{fig:data}Raw (unprocessed) data. Replace this figure with the one you've made, that shows the resistivity.}
+\end{figure}
+
+\section{Implementation Challenges}
+
+\section{Possible Improvements}
+
+\newpage
+
+\begin{table}
+\centering
+\begin{tabular}{l|r}
+Item & Quantity \\\hline
+Widgets & 42 \\
+Gadgets & 13
+\end{tabular}
+\caption{\label{tab:widgets}An example table.}
+\end{table}
+
+\subsection{How to Write Mathematics}
+
+\LaTeX{} is great at typesetting mathematics. Let $X_1, X_2, \ldots, X_n$ be a sequence of independent and identically distributed random variables with $\text{E}[X_i] = \mu$ and $\text{Var}[X_i] = \sigma^2 < \infty$, and let
+
+\begin{equation}
+S_n = \frac{X_1 + X_2 + \cdots + X_n}{n}
+      = \frac{1}{n}\sum_{i}^{n} X_i
+\label{eq:sn}
+\end{equation}
+
+denote their mean. Then as $n$ approaches infinity, the random variables $\sqrt{n}(S_n - \mu)$ converge in distribution to a normal $\mathcal{N}(0, \sigma^2)$.
+
+The equation \ref{eq:sn} is very nice.
+
+\subsection{How to Make Sections and Subsections}
+
+Use section and subsection commands to organize your document. \LaTeX{} handles all the formatting and numbering automatically. Use ref and label commands for cross-references.
+
+\subsection{How to Make Lists}
+
+You can make lists with automatic numbering \dots
+
+\begin{enumerate}
+\item Like this,
+\item and like this.
+\end{enumerate}
+\dots or bullet points \dots
+\begin{itemize}
+\item Like this,
+\item and like this.
+\end{itemize}
+\dots or with words and descriptions \dots
+\begin{description}
+\item[Word] Definition
+\item[Concept] Explanation
+\item[Idea] Text
+\end{description}
+
+We hope you find write\LaTeX\ useful, and please let us know if you have any feedback using the help menu above.
+
+\begin{thebibliography}{9}
+\bibitem{sox1}
+  SoX - Sound eXchange \url{http://sox.sourceforge.net/}
+\bibitem{ana1}
+  Anaconda \url{https://www.anaconda.com/download}
+\end{thebibliography}
+\end{document}
