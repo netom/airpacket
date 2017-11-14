@@ -2,14 +2,25 @@
 
 \usepackage[english]{babel}
 \usepackage[utf8]{inputenc}
+\usepackage{times}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{hyperref}
 \usepackage{listings}
 
-\title{Experimental atmospheric data transmission method using audio 
-frequencies}
+\setlength{\parskip}{\baselineskip}%
+\setlength{\parindent}{0pt}%
+\frenchspacing
+
+\lstset{
+    frame=single,
+    basicstyle=\footnotesize\ttfamily
+}
+
+\title{Experimental data transmission using sound}
 
 \author{FÁBIÁN Tamás László}
 
@@ -18,14 +29,11 @@ frequencies}
 \begin{document}
 \maketitle
 
-\begin{abstract}
+\section{Introduction}
+\label{sec:introduction}
 
-\end{abstract}
-
-\section{Introduction} \label{sec:introduction} I describe here a 
-method for transmitting and receiving 20 bytes of data using audio 
-frequencies. The audio is propagated between a speaker and a microphone 
-in air.
+A robust method for transmitting and receiving 20 byte long data 
+packets using sound is described.
 
 The method uses 17 tones and continuous-phase frequency-shift keying. 
 Frame synchronization is achieved by using the lowest tone to transmit 
@@ -76,7 +84,7 @@ configuration \textit{before} Python installation is recommended:
 \begin{itemize}
 \item Intel Core i5 processor, or better
 \item 4GB RAM
-\item 5GB free disk space
+\item 5GB of free disk space
 \item Speakers
 \item Microphone
 \item Ubuntu Linux 17.04 or newer is recommended, a recent Windows or
@@ -84,15 +92,30 @@ macOS should also work
 \end{itemize}
 
 It is recommended to install a Python distribution called 
-Anaconda\cite{ana1}.
+Anaconda\cite{ana1}. Anaconda a contains stable and fast Python build 
+along with several important libraries.
 
 \subsection{Installation}
 
+Anaconda 5.0.1 with Python 3.6 can be downloaded from 
+\url{https://www.anaconda.com/download}. There are installers for 
+Linux, Windows and macOS operating system. Any of those systems should 
+be able to run the demo software, but it had only been tested throughly 
+on Ubuntu Linux "zesty" 17.04.
+
 The scripts \texttt{send.py} and \texttt{receive.py} use 
 \textit{pyaudio}, a Python binding for an audio library called 
-\textit{portaudio}, and several other libraries.
+\textit{portaudio}. The portaudio library (.so, .dll, or .dynlib) and 
+header files need to be installed. The installation process is differs 
+across operating systems, and can be as simple as issuing a command 
+(Linux and maxOS), or having to install Visual Studio and compile the 
+library by hand (Windows)\footnote{This is why the .dll-s and headers 
+bundled with the pyaudio Python library for Windows}.
 
-These can be installed on Ubunut Linux "zesty" 17.04 like this:
+\subsubsection{Installation on Ubuntu Linux "zesty" 17.04}
+
+The \texttt{portaudio19-dev} package need to be installed with the 
+package manager \texttt{apt}:
 
 \begin{lstlisting}
 $ sudo apt install portaudio19-dev
@@ -100,13 +123,17 @@ $ cd <path-to-demo-software>
 $ pip install -r requirements.txt
 \end{lstlisting}
 
-On Apple macOS portaudio need to be installed using \texttt{brew}:
+\subsubsection{Installation on Apple macOS}
+
+Portaudio need to be installed using \texttt{brew}:
 
 \begin{lstlisting}
 $ brew install portaudio
 $ cd <path-to-demo-software>
 $ pip install -r requirements.txt
 \end{lstlisting}
+
+\subsubsection{Installation on Microsoft Windows}
 
 On Windows, the portaudio binaries are included in the pyaudio wheel, 
 so separate installation should not be necessary (make sure 
@@ -117,85 +144,506 @@ C:\> cd <path-to-demo-software>
 C:\> pip install -r requirements.txt
 \end{lstlisting}
 
-\subsection{Experiment setup}
-Configure one or two computers, sending from other devices
-\subsection{Sending or saving messages}
-\subsection{Receiving or loading messages}
-\subsection{Recording audio}
-\subsection{Playing saved audio}
-\subsection{Observing saved audio waveforms and spectra}
-\subsection{Generating test files}
-\subsection{Scoring performance on a test file set}
-\subsection{Generating synchronization vectors}
+\subsection{Usage}
+
+The scripts \texttt{test-gen.py} and \texttt{text-score.py} can 
+generate a large set of audio files, and run a decoding benchmark on 
+them respectively. Any computer capable running Python properly may be 
+used to run the benchmark. Since the process involves generating 14000 
+files consuming about 1.2GB space, this should be done on a fast 
+machine.
+
+The scripts \texttt{send.py} and \texttt{receive.py} use audio devices 
+to play and record audio. They use the default system device, but they 
+can set up to use any device with the \texttt{-d <number>} or 
+\texttt{--device <number>} parameter. Use \texttt{devices.py} to view a 
+list of audio devices.
+
+All command examples assume Linux operating system, but they should 
+work with no or only minor modifications on macOS and Windows too. 
+Commands should be executed in the directory where the scripts are 
+located.
+
+\subsubsection{Listing audio devices}
+
+The \texttt{devices.py} script shows a list of audio devices available. 
+On some systems error messages may occur on the first few lines. These 
+can be ignored.
+
+Since \texttt{send.py} and \texttt{receive.py} are using the default 
+audio device, this list will probably rarely be needed.
+
+\begin{lstlisting}
+$ ./devices.py 
+ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.rear
+ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM
+cards.pcm.center_lfe
+ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
+ALSA lib pcm_route.c:867:(find_matching_chmap) Found no matching channel
+map
+0 HDA Intel PCH: ALC898 Analog (hw:0,0)
+1 HDA Intel PCH: ALC898 Digital (hw:0,1)
+2 HDA Intel PCH: ALC898 Alt Analog (hw:0,2)
+3 USB Audio CODEC: - (hw:1,0)
+4 HDA NVidia: HDMI 0 (hw:2,3)
+5 HDA NVidia: HDMI 1 (hw:2,7)
+6 HDA NVidia: HDMI 2 (hw:2,8)
+7 HDA NVidia: HDMI 3 (hw:2,9)
+8 sysdefault
+9 front
+10 surround21
+11 surround40
+12 surround41
+13 surround50
+14 surround51
+15 surround71
+16 iec958
+17 spdif
+18 pulse
+19 dmix
+20 default
+$
+\end{lstlisting}
+
+\subsubsection{Sending or saving messages}
+
+The \texttt{send.py} script can send a message by playing the modulated
+audio carrier on an audio device, or saving and audio file.
+
+In it's simplest form it's just called with a short text to send:
+
+\begin{lstlisting}
+$ ./send.py test
+CNR (dB):    inf
+Eb/N0 (dB):  inf
+Peak:        0.252437119188
+$
+\end{lstlisting}
+
+The command always displays the estimated carrier to noise power ratio 
+and $E_b/N_0$ in decibels. Since there is no noise added by default, 
+both figures are displayed as being infinite.
+
+Adding noise, distortion and saving the resulting audio into a file:
+
+\begin{lstlisting}
+$ ./send.py -f test.s16 -c -11 -d 10000 test
+CNR (dB):    -11.0397105534
+Eb/N0 (dB):  9.92938957672
+Peak:        0.742417642773
+$
+\end{lstlisting}
+
+The files store a single audio channel at a sampling rate of 44100 KHz. 
+Each sample is a little endian 16 bit two's complement signed integer. 
+The files contain no header or any kind of metadata.
+
+One can specify a string of hexadecimal digits to send with the 
+\texttt{-x} or \texttt{--hex} flag:
+
+\begin{lstlisting}
+$ ./send.py -f test.s16 -c -11 -d 10000 -x \
+  9d7133b7f07274a5be88a06f7b5ae2914822c008
+
+CNR (dB):    -11.0397105534
+Eb/N0 (dB):  9.92938957672
+Peak:        0.742417642773
+$
+\end{lstlisting}
+
+For a brief description of usage and parameters, issue 
+\texttt{./send.py -h}.
+
+\subsubsection{Receiving or loading messages}
+
+The script \texttt{receive.py} can be used to load audio files, or 
+decode audio read from an audio device in real-time. The test.s16 file 
+created above can (very likely) be decoded with the following 
+command:
+
+\begin{lstlisting}
+$ ./receive.py -f test.s16 -x
+Got sync signal, decoding... 
+DECODED: >>> 9d7133b7f07274a5be88a06f7b5ae2914822c008 <<<
+End of data stream reached, terminating
+$
+\end{lstlisting}
+
+Without the \texttt{-f} parameter the script listens on the default 
+audio device. The \texttt{-x} flag is useful for printing arbitrary 
+binary data. Without this flag the script tries to convert the received 
+data to ASCII strings, and print that instead of hexa digits. Call the 
+script with tthe \texttt{-h} parameter to get a list of usable flags 
+and parameters and their descriptions.
+
+\subsubsection{Recording audio}
+
+A short script is provided for Linux using the SoX command 
+\texttt{rec}, and providing it with the necessary parameters, so only 
+the file name has to be given:
+
+\begin{lstlisting}
+$ ./rec.sh test.s16
+
+Input File     : 'default' (alsa)
+Channels       : 1
+Sample Rate    : 44100
+Precision      : 16-bit
+Sample Encoding: 16-bit Signed Integer PCM
+
+In:0.00% 00:00:05.20 [00:00:00.00] Out:221k  [ -====|====- ]      Clip:0
+Aborted.
+$
+\end{lstlisting}
+
+The recording can be stopped by hitting CTRL+C. It is worth keeping an 
+eye on the "Clip" indicator at the end of the last line. If this 
+counter starts growing then the audio level is too high.
+
+\subsubsection{Playing saved audio}
+
+Playing audio is also handled by SoX via a Linux shell script:
+
+\begin{lstlisting}
+$ ./play.sh test.s16 
+
+test.s16:
+
+ File Size: 459k      Bit Rate: 706k
+  Encoding: Signed PCM    
+  Channels: 1 @ 16-bit   
+Samplerate: 44100Hz      
+Replaygain: off         
+  Duration: 00:00:05.20  
+
+In:100%  00:00:05.20 [00:00:00.00] Out:229k  [      |      ]      Clip:0    
+Done.
+$
+\end{lstlisting}
+
+\subsubsection{Generating test files}
+
+The test set generator script will generate one thousand random test 
+files for each CNR level. The tested levels are between and including
+-14dB and -1 dB.
+
+The \texttt{test-gen.py} script accepts no arguments, and calling it 
+will start generating test files right away:
+
+\begin{lstlisting}
+$ ./test-gen.py 
+  0%|                              | 5/14000 [00:01<1:06:18,  3.52it/s]
+$
+\end{lstlisting}
+
+During test set generation a progress bar with the speed and ETA is 
+displayed. Before generating a test set, make sure the \texttt{data} 
+directory only contains a \texttt{.gitignore} file, and no *.s16 audio 
+files. These are not remove automatically, and new files will have 
+different names every time.
+
+Every file is exactly 1 second, or 44100 samples -- 88200 bytes -- 
+long. The signal is right in the middle of every file at offset 2050.
+
+\subsubsection{Scoring performance on a test file set}
+
+The \texttt{test-score.py} script will read any .s16 files from the 
+data directory and will attempty to demodulate and decode them. It will 
+record any success or failure in finding the synchronization signal or 
+decoding the actual message.
+
+Before exiting, the script will print out a rather dense representation 
+of the results. It looks like this:
+
+\begin{lstlisting}
+FILES:         {-5: 1000, -3: 1000, -4: 1000, -14: 1000, ...
+GOOD DECODES:  {-5: 1000, -3: 1000, -4: 1000, -12: 834, ...
+NO DECODES:    {-14: 1000, -13: 897, -12: 166, -11: 1}
+BAD DECODES:   {}
+GOOD SYNCS:    {-5: 1000, -3: 1000, -4: 1000, -14: 980, ...
+BAD SYNCS:     {-13: 10, -14: 20, -12: 1, -11: 1}
+BAD SYNC SET:  {2040, 2060}
+\end{lstlisting}
+
+Each line shows a metric. The number before the colons are specific CNR 
+values, the number after the colons are the number of occurences.
+
+For example the ,,FILES'' line shows the number of files. It can be 
+seen that for the CNR level of -5(dB) there were ,,1000'' files in the 
+data directory.
+
+It can also be seen that for levels -5, -3 and -4 ever file was decoded 
+OK, and only 834 ,,GOOD DECODES'' were possible at CNR level -12.
+
+,,NO DECODES'' counts files that could not be decoded at all, ,,BAD 
+DECODES'' count files that could be decoded, but the results were 
+different from the originally encoded data. ,,GOOD SYNCS'' show the 
+number of files where the synchronization signal could be recovered 
+with utmost precision. ,,BAD SYNCS'' counts ill-identified sync 
+vectors. ,,BAD SYNC SET'' shows all the offsets where a sync vector was 
+found, except the correct 2050 offset.
+
+\subsubsection{Generating synchronization vectors}
+
+The synchronization vector has to have a special property: it must have 
+low aperiodic autocorrelation. Such vectors are rare, and long vectors 
+are hard to find. The script \texttt{syncvec-search.py} tries to find 
+such vectors using gradient descent with random restarts. This script 
+was used design/development time, and can be used again if (when) 
+changing the modulation becomes necessary.
+
+\subsubsection{Observing saved audio waveforms and spectra}
+
+A script named \texttt{scope.py} is provided for graphically displaying 
+waveforms stored in s16 files. The script accepts a file name as a 
+single mandatory positional parameters, and various flags that control 
+what should be displayed. By default it will display a simple waveform.
+
+The following flags are available:
+
+\begin{description}
+\item[\texttt{-h}] Show help and exit.
+\item[\texttt{-s}] Show spectrum.
+\item[\texttt{-c}] Show correlation vector.
+\item[\texttt{-w}] Show waterfall.
+\item[\texttt{-o}] Offset: skip this many samples.
+\item[\texttt{-y}] Synchronize: try to find a packet, cut it out, and.
+  display only that
+\end{description}
+
+Some examples follow showing clean and noisy signals.
+
+\begin{lstlisting}
+$ ./scope.py clean.s16
+...
+$ ./scope.py noisy.s16
+...
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{scope_clean.png}
+        \caption{\label{fig:scope_clean}Clean waveform}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=\textwidth]{scope_noisy.png}
+        \caption{\label{fig:scope_noisy}Noisy waveform}
+    \end{subfigure}
+\end{figure}
+
+\begin{lstlisting}
+$ ./scope.py -s clean.s16
+...
+$ ./scope.py -s noisy.s16
+...
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{dft_clean.png}
+        \caption{\label{fig:dft_clean}Clean DFT}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{dft_noisy.png}
+        \caption{\label{fig:dft_noisy}Noisy DFT}
+    \end{subfigure}
+\end{figure}
+
+\begin{lstlisting}
+$ ./scope.py -c clean.s16
+...
+$ ./scope.py -c noisy.s16
+...
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{correlation_clean.png}
+        \caption{\label{fig:correlation_clean}Correlation vector, clean signal}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{correlation_noisy.png}
+        \caption{\label{fig:correlation_noisy}Correlation vector, noisy signal}
+    \end{subfigure}
+\end{figure}
+
+\begin{lstlisting}
+$ ./scope.py -y -w clean.s16
+...
+$ ./scope.py -y -w noisy.s16
+...
+\end{lstlisting}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{waterfall_sync_clean.png}
+        \caption{\label{fig:dft_clean}Clean signal on waterfall (synchronized)}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{waterfall_sync_noisy.png}
+        \caption{\label{fig:dft_noisy}Noisy signal on waterfall (synchronized)}
+    \end{subfigure}
+\end{figure}
 
 \section{Experimental results}
-\subsection{Experimental set-ups}
-* Quiet room
-* Noisy street
-* Noisy restaurant
-\subsection{Results}
-Equipment, distances vs. volume levels
-%\begin{figure}
-%\centering
-%\includegraphics[width=1\textwidth]{raw_data.png}
-%\caption{\label{fig:data}Raw (unprocessed) data. Replace this figure with the one you've made, that shows the resistivity.}
-%\end{figure}
 
-\section{Implementation Challenges}
+\subsection{Real-World Experiments}
 
-\section{Possible Improvements}
+\subsubsection{Single PC setup}
+
+A single desktop personal computer with a high quality speaker and 
+microphone were used to test performance at the early stages of 
+development.
+
+\textbf{With this setup I could easily achieve reliable data transfer 
+at distances slightly over 1 meter even when music played, or people 
+were talking if the microphone and speaker were facing each other.}
+
+Performance was heavily dependent on the microphone setup and volume 
+setting. Too high volume causes clipping and destroys the signal, to 
+loo volume hides the signal in the noise of the recording equipment. If 
+the microphone were facing in a direction other than the speaker, 
+\emph{multipath propagation} was found to interfere with reception.
+
+Ambient noise will of course interfere with the reception, but the 
+volume of the transmitted signal could always be set high enough to 
+ensure success, and not be particularly annoying (althoug this is 
+highly subjective, and should carefully be considered while developing 
+the product).
+
+\subsubsection{Single notebook setup}
+
+A single laptop computer was used to try and replicate the results. The 
+notebook had a built-in microphone with lots of noise, since it was 
+equipped with forced air cooling, and the fan was on most of the time.
+
+The built-in microphone and the speaker were about 12cm close together. 
+The received signals weren't as high quality as with the PC setup. This 
+was due not to the distance, but to the fact that the speakers and the 
+microphone were deliberatly placed and insulated so that the audio 
+feedback is as little as possible.
+
+The microphone in this setup faces away from the speakers, and picks 
+other sounds up much easily, including the sound of the speakers 
+bouncing off objects, and arriving from the front.
+
+Because of this, the signal gets back to the receiver multiple times 
+with some delay. This can easily confuse the demodulator.
+
+\subsubsection{Notebook-PC setup}
+
+To rule out any problem with the laptop's microphone and audio 
+circutry, several experiments were conducted with the PC set being the 
+transmitter, and it being the receiver.
+
+A performance similar to the PC-only setup were measured: signals could 
+easily be picked up from abount 1 meter even when the laptop's fan were 
+on, or some music or noise could be heared in the room.
+
+\subsection{Benchmarks}
+
+Using the \texttt{test-gen.py} script, 14000 audio files were 
+generated, from and including -14dB CNR to and including -1dB CNR. The 
+files contained randomly generated binary data. All the files were 
+exactly 1 second long, and every file had the encoded data right in the 
+middle, at offset 2050. The decoding benchmark does not ,,know'' about 
+this convention, and has to guess the position correctly in every file.
+
+\textbf{It was found the decoding is possible 99.9\% of the time at 
+-11dB CNR under 22.05 KHz band-limited white noise.} Performance were 
+quickly falling under that: about 83.4\% good decodes were logged at 
+-12dB, and none at -13db. This \emph{cliff effect} is due to the 
+\emph{code rate} of the error correcting code is rather low.
+
+\textbf{It is also worth mentioning that none of the messages were ever 
+corrupted: they either decode correctly, or doesn't.}
+
+The synchronization method was found out to have been a very good 
+choice, might even have been an overkill. \textbf{In the vast majority 
+of the cases, the positions of the data frames were precisely 
+identified, even in cases where decoding was impossible.} Even when the 
+algorithm made errors finding frames, it only missed 10 samples in 
+either direction, so instead of one, only 3 positions were ever 
+identified.
+
+
+FILES:         {-5: 1000, -3: 1000, -4: 1000, -14: 1000, -12: 1000, -9: 1000, -7: 1000, -13: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 1000}
+GOOD DECODES:  {-5: 1000, -3: 1000, -4: 1000, -12: 834, -9: 1000, -7: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999, -13: 103}
+NO DECODES:    {-14: 1000, -13: 897, -12: 166, -11: 1}
+BAD DECODES:   {}
+GOOD SYNCS:    {-5: 1000, -3: 1000, -4: 1000, -14: 980, -12: 999, -9: 1000, -7: 1000, -13: 990, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999}
+BAD SYNCS:     {-13: 10, -14: 20, -12: 1, -11: 1}
+BAD SYNC SET:  {2040, 2060}
+
+
+\section{Implementation Challenges and Possible Improvements}
+
+The work I've done on this project so far is rather experimental. The 
+finished product has to work in different environments and work with 
+various noise sources, and a large variety of devices with different 
+parameters.
+
+I hereby attempt to address a few problems that might come up during 
+the deployment of this -- or similar -- solution. I also provides 
+
+\subsection{Parameters, Tuning}
+
+\subsection{Processing power}
+
+\subsection{Non-white Noise}
+
+\subsection{Erasure detection}
+
+\subsection{Choice of FEC, Implementation, Performance}
+
+Code rate - sync performance tradeoff
+
+Koetter-Vardy soft-decision decoding: Patent issues
+
+Franke-Taylor algorithm adapted for RS(54,20)
+
+LDPC
+
+Rateless erasure codes (fountain codes): Raptor code 
+(RaptorQ\footnote{\url{https://tools.ietf.org/html/rfc6330}}), online 
+codes\footnote{\url{https://pdos.csail.mit.edu/~petar/papers/maymounkov-bigdown-lncs.ps}}
+
+
+\subsection{Multipath}
+
+Currently this is one of the major factors that limit the performance 
+of this solution.
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=\textwidth]{waterfall_sync_clean.png}
+        \caption{\label{fig:waterfall_sync_clean}Clean signal}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{waterfall_sync_multipath.png}
+        \caption{\label{fig:waterfall_sync_multipath}Multipath-affected signal}
+    \end{subfigure}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{correlation_clean.png}
+        \caption{\label{fig:correlation_clean}Correlation vector of a reasonably clean signal}
+    \end{subfigure}
+    \begin{subfigure}{0.45\textwidth}
+        \includegraphics[width=1\textwidth]{correlation_multipath.png}
+        \caption{\label{fig:correlation_multipath}Correlation vector of a signal affected by multipath}
+    \end{subfigure}
+\end{figure}
 
 \newpage
 
-\begin{table}
-\centering
-\begin{tabular}{l|r}
-Item & Quantity \\\hline
-Widgets & 42 \\
-Gadgets & 13
-\end{tabular}
-\caption{\label{tab:widgets}An example table.}
-\end{table}
-
-\subsection{How to Write Mathematics}
-
-\LaTeX{} is great at typesetting mathematics. Let $X_1, X_2, \ldots, X_n$ be a sequence of independent and identically distributed random variables with $\text{E}[X_i] = \mu$ and $\text{Var}[X_i] = \sigma^2 < \infty$, and let
-
-\begin{equation}
-S_n = \frac{X_1 + X_2 + \cdots + X_n}{n}
-      = \frac{1}{n}\sum_{i}^{n} X_i
-\label{eq:sn}
-\end{equation}
-
-denote their mean. Then as $n$ approaches infinity, the random variables $\sqrt{n}(S_n - \mu)$ converge in distribution to a normal $\mathcal{N}(0, \sigma^2)$.
-
-The equation \ref{eq:sn} is very nice.
-
-\subsection{How to Make Sections and Subsections}
-
-Use section and subsection commands to organize your document. \LaTeX{} handles all the formatting and numbering automatically. Use ref and label commands for cross-references.
-
-\subsection{How to Make Lists}
-
-You can make lists with automatic numbering \dots
-
-\begin{enumerate}
-\item Like this,
-\item and like this.
-\end{enumerate}
-\dots or bullet points \dots
-\begin{itemize}
-\item Like this,
-\item and like this.
-\end{itemize}
-\dots or with words and descriptions \dots
-\begin{description}
-\item[Word] Definition
-\item[Concept] Explanation
-\item[Idea] Text
-\end{description}
-
-We hope you find write\LaTeX\ useful, and please let us know if you have any feedback using the help menu above.
 
 \begin{thebibliography}{9}
 \bibitem{sox1}
