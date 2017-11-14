@@ -6,8 +6,10 @@
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage{hyperref}
+\usepackage{listings}
 
-\title{Experimental atmospheric data transmission method using audio frequencies}
+\title{Experimental atmospheric data transmission method using audio 
+frequencies}
 
 \author{FÁBIÁN Tamás László}
 
@@ -20,41 +22,100 @@
 
 \end{abstract}
 
-\section{Introduction}
-\label{sec:introduction}
-I describe here a method for transmitting and receiving 20 bytes of data using audio frequencies. The audio is propagated between a speaker and a microphone in air.
+\section{Introduction} \label{sec:introduction} I describe here a 
+method for transmitting and receiving 20 bytes of data using audio 
+frequencies. The audio is propagated between a speaker and a microphone 
+in air.
 
-The method uses 17 tones and continuous-phase frequency-shift keying. Frame synchronization is achieved by using the lowest tone to transmit a sequence with low acyclic autocorrelation, and near 50\% duty cycle. The remaining 16 tones encode 4 bits per symbol. Reed-Solomon code RS\(54,20\) is applied before modulation, to yield the 54 byte payload. The payload then translated to 16-tone symbols and interleaved with the 17th synchronization tone.
+The method uses 17 tones and continuous-phase frequency-shift keying. 
+Frame synchronization is achieved by using the lowest tone to transmit 
+a sequence with low acyclic autocorrelation, and near 50\% duty cycle. 
+The remaining 16 tones encode 4 bits per symbol. Reed-Solomon code 
+RS\(54,20\) is applied before modulation, to yield the 54 byte payload. 
+The payload then translated to 16-tone symbols and interleaved with the 
+17th synchronization tone.
 
-On the receiving end, the demodulator uses correlation to find a transmitted frame. The 16 tone data symbols are decoded non-coherently, using Fast Fourier Transformation, and choosing the FFT bucket with the largest power. The symbols then transformed to half-bytes (or \textit{nibbles}). The received nibbles then assembled to bytes, and decoded using RS(54,20).
+On the receiving end, the demodulator uses correlation to find a 
+transmitted frame. The 16 tone data symbols are decoded non-coherently, 
+using Fast Fourier Transformation, and choosing the FFT bucket with the 
+largest power. The symbols then transformed to half-bytes (or 
+\textit{nibbles}). The received nibbles then assembled to bytes, and 
+decoded using RS(54,20).
 
-A software was written in the Python language for experimental and demonstration purposes. Scripts are provided to send and receive short text messages using the computer's audio devices, or to read/write the audio to/from data files. The files can be played back, or converted into more traditional audio formats using sox\cite{sox1}
+A software was written in the Python language for experimental and 
+demonstration purposes. Scripts are provided to send and receive short 
+text messages using the computer's audio devices, or to read/write the 
+audio to/from data files. The files can be played back, or converted 
+into more traditional audio formats using sox\cite{sox1}
 
-A framework was established to gauge the performance of the software. A script can generate random messages and save them into audio files with various level of white noise. An other script then can be used to attempt decoding these files. At the end of the experiment, various statistics are shown.
+A framework was established to gauge the performance of the software. A 
+script can generate random messages and save them into audio files with 
+various levels of white noise. An other script then can be used to 
+attempt decoding these files. Various statistics are shown after the 
+script finished decoding the files.
 
-Simulations show that this method can transmit data 99.9\% accurately at a carrier to noise ratio (CNR) of -11dB (or at about 9.9dB $E_b/N_0$) measured over 22.05 KHz bandwidth, and with 83.4\% accuracy at -12dB CNR (about 8.9dB $E_b/N_0$).
+Simulations show that this method can transmit data 99.9\% accurately 
+at a carrier to noise ratio (CNR) of -11dB (or at about 9.9dB 
+$E_b/N_0$) measured over 22.05 KHz bandwidth, and with 83.4\% accuracy 
+at -12dB CNR (about 8.9dB $E_b/N_0$).
 
-In real-world experiment using a small set of consumer-grade computer audio devices I could achieve reliable data transfer over 1 meter in a quiet room at quite low volume levels. Noisy environments mandate higher volume setting and/or shorter distances.
-\section{Theory of Operation}
-\subsection{Design considerations}
-\subsection{Modulation and Demodulation}
-\subsection{Synchronization}
-\subsection{Forward Error Correction}
-\section{The Software}
-\label{sec:thesoftware}
+In real-world experiment using a small set of consumer-grade computer 
+audio devices I could achieve reliable data transfer well over 1 meter 
+in a quiet room at quite low volume levels. Noisy environments mandate 
+higher volume setting and/or shorter distances. \section{Theory of 
+Operation} \subsection{Design considerations} \subsection{Modulation 
+and Demodulation} \subsection{Synchronization} \subsection{Forward 
+Error Correction} \section{The Software} \label{sec:thesoftware}
 
 \subsection{Prerequisites}
 
-Have a microphone and speaker
+The demonstration software requires a functional Python 3.6 
+installation, and a machine with enough resources. The following 
+configuration \textit{before} Python installation is recommended:
 
-Install Python 3.6 with Anaconda.\cite{ana1}
+\begin{itemize}
+\item Intel Core i5 processor, or better
+\item 4GB RAM
+\item 5GB free disk space
+\item Speakers
+\item Microphone
+\item Ubuntu Linux 17.04 or newer is recommended, a recent Windows or
+macOS should also work
+\end{itemize}
+
+It is recommended to install a Python distribution called 
+Anaconda\cite{ana1}.
 
 \subsection{Installation}
 
-Install portaudio
-...
+The scripts \texttt{send.py} and \texttt{receive.py} use 
+\textit{pyaudio}, a Python binding for an audio library called 
+\textit{portaudio}, and several other libraries.
 
-Install files from requirements.txt
+These can be installed on Ubunut Linux "zesty" 17.04 like this:
+
+\begin{lstlisting}
+$ sudo apt install portaudio19-dev
+$ cd <path-to-demo-software>
+$ pip install -r requirements.txt
+\end{lstlisting}
+
+On Apple macOS portaudio need to be installed using \texttt{brew}:
+
+\begin{lstlisting}
+$ brew install portaudio
+$ cd <path-to-demo-software>
+$ pip install -r requirements.txt
+\end{lstlisting}
+
+On Windows, the portaudio binaries are included in the pyaudio wheel, 
+so separate installation should not be necessary (make sure 
+\texttt{pip} and \texttt{python} are on the \texttt{PATH}):
+
+\begin{lstlisting}
+C:\> cd <path-to-demo-software>
+C:\> pip install -r requirements.txt
+\end{lstlisting}
 
 \subsection{Experiment setup}
 Configure one or two computers, sending from other devices
@@ -74,11 +135,11 @@ Configure one or two computers, sending from other devices
 * Noisy restaurant
 \subsection{Results}
 Equipment, distances vs. volume levels
-\begin{figure}
-\centering
-\includegraphics[width=1\textwidth]{raw_data.png}
-\caption{\label{fig:data}Raw (unprocessed) data. Replace this figure with the one you've made, that shows the resistivity.}
-\end{figure}
+%\begin{figure}
+%\centering
+%\includegraphics[width=1\textwidth]{raw_data.png}
+%\caption{\label{fig:data}Raw (unprocessed) data. Replace this figure with the one you've made, that shows the resistivity.}
+%\end{figure}
 
 \section{Implementation Challenges}
 

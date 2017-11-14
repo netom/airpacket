@@ -20,6 +20,11 @@ parser.add_argument(
     help='Show the spectrum'
 )
 parser.add_argument(
+    '-c', '--correlation',
+    default=False, const=True, action='store_const',
+    help='Show correlation with the synchronization vector'
+)
+parser.add_argument(
     '-w', '--waterfall',
     default=False, const=True, action='store_const',
     help='Show a waterfall chart'
@@ -38,10 +43,10 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-data = s16_read_all(args.file, args.offset)
+data = normalize(s16_read_all(args.file, args.offset))
 
 if args.sync:
-    corr = np.correlate(normalize(data), syncSig)
+    corr = np.correlate(data, syncSig)
     signal_strength = np.max(corr)
     best_pos = np.argmax(corr)
     data = data[best_pos:best_pos+len(syncSig)]
@@ -55,6 +60,9 @@ elif args.waterfall:
         fft = np.absolute(np.fft.rfft(data[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH])/SYMBOL_LENGTH)
         ffts.append(fft)
     plt.imshow(ffts)
+elif args.correlation:
+    corr = np.correlate(data, syncSig)
+    plt.plot(corr)
 else:
     plt.plot(data)
 
