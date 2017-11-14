@@ -53,11 +53,13 @@ if args.sync:
 
 if args.spectrum:
     fft = np.absolute(np.fft.rfft(data))/np.sqrt(len(data))
+    fft[:1000] = 0 # Zero out the first 1KHz
     plt.plot(fft)
 elif args.waterfall:
     ffts = []
     for i in range(int(len(data)/SYMBOL_LENGTH)):
         fft = np.absolute(np.fft.rfft(data[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH])/SYMBOL_LENGTH)
+        fft[:5] = 0 # Zero out the first 1KHz
         ffts.append(fft)
     plt.imshow(ffts)
 elif args.correlation:
