@@ -30,7 +30,6 @@
 \maketitle
 
 \section{Introduction}
-\label{sec:introduction}
 
 A robust method for transmitting and receiving 20 byte long data 
 packets using sound is described.
@@ -54,7 +53,8 @@ A software was written in the Python language for experimental and
 demonstration purposes. Scripts are provided to send and receive short 
 text messages using the computer's audio devices, or to read/write the 
 audio to/from data files. The files can be played back, or converted 
-into more traditional audio formats using sox\cite{sox1}
+into more traditional audio formats using sox
+\footnote{\url{http://sox.sourceforge.net/}}.
 
 A framework was established to gauge the performance of the software. A 
 script can generate random messages and save them into audio files with 
@@ -73,7 +73,7 @@ in a quiet room at quite low volume levels. Noisy environments mandate
 higher volume setting and/or shorter distances. \section{Theory of 
 Operation} \subsection{Design considerations} \subsection{Modulation 
 and Demodulation} \subsection{Synchronization} \subsection{Forward 
-Error Correction} \section{The Software} \label{sec:thesoftware}
+Error Correction} \section{The Software}
 
 \subsection{Prerequisites}
 
@@ -91,14 +91,17 @@ configuration \textit{before} Python installation is recommended:
 macOS should also work
 \end{itemize}
 
-It is recommended to install a Python distribution called 
-Anaconda\cite{ana1}. Anaconda a contains stable and fast Python build 
-along with several important libraries.
+It is recommended to install a Python distribution called Anaconda
+\footnote{url{https://www.anaconda.com/download}}. Anaconda a contains
+stable and fast Python build along with several important libraries.
 
 \subsection{Installation}
 
-Anaconda 5.0.1 with Python 3.6 can be downloaded from 
-\url{https://www.anaconda.com/download}. There are installers for 
+Anaconda 5.0.1 with Python 3.6 can be downloaded from:
+
+\url{https://www.anaconda.com/download}.
+
+There are installers for 
 Linux, Windows and macOS operating system. Any of those systems should 
 be able to run the demo software, but it had only been tested throughly 
 on Ubuntu Linux "zesty" 17.04.
@@ -179,8 +182,8 @@ ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.rear
 ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM
 cards.pcm.center_lfe
 ALSA lib pcm.c:2495:(snd_pcm_open_noupdate) Unknown PCM cards.pcm.side
-ALSA lib pcm_route.c:867:(find_matching_chmap) Found no matching channel
-map
+ALSA lib pcm_route.c:867:(find_matching_chmap) Found no matching
+channel map
 0 HDA Intel PCH: ALC898 Analog (hw:0,0)
 1 HDA Intel PCH: ALC898 Digital (hw:0,1)
 2 HDA Intel PCH: ALC898 Alt Analog (hw:0,2)
@@ -291,7 +294,7 @@ Sample Rate    : 44100
 Precision      : 16-bit
 Sample Encoding: 16-bit Signed Integer PCM
 
-In:0.00% 00:00:05.20 [00:00:00.00] Out:221k  [ -====|====- ]      Clip:0
+In:0.00% 00:00:05.20 [00:00:00.00] Out:221k  [ -====|====- ]     Clip:0
 Aborted.
 $
 \end{lstlisting}
@@ -316,7 +319,7 @@ Samplerate: 44100Hz
 Replaygain: off         
   Duration: 00:00:05.20  
 
-In:100%  00:00:05.20 [00:00:00.00] Out:229k  [      |      ]      Clip:0    
+In:100%  00:00:05.20 [00:00:00.00] Out:229k  [      |      ]     Clip:0    
 Done.
 $
 \end{lstlisting}
@@ -424,11 +427,11 @@ $ ./scope.py noisy.s16
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{scope_clean.png}
-        \caption{\label{fig:scope_clean}Clean waveform}
+        \caption{Clean waveform}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=\textwidth]{scope_noisy.png}
-        \caption{\label{fig:scope_noisy}Noisy waveform}
+        \caption{Noisy waveform}
     \end{subfigure}
 \end{figure}
 
@@ -443,11 +446,11 @@ $ ./scope.py -s noisy.s16
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{dft_clean.png}
-        \caption{\label{fig:dft_clean}Clean DFT}
+        \caption{Clean DFT}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{dft_noisy.png}
-        \caption{\label{fig:dft_noisy}Noisy DFT}
+        \caption{Noisy DFT}
     \end{subfigure}
 \end{figure}
 
@@ -462,11 +465,11 @@ $ ./scope.py -c noisy.s16
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{correlation_clean.png}
-        \caption{\label{fig:correlation_clean}Correlation vector, clean signal}
+        \caption{Correlation vector, clean signal}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{correlation_noisy.png}
-        \caption{\label{fig:correlation_noisy}Correlation vector, noisy signal}
+        \caption{Correlation vector, noisy signal}
     \end{subfigure}
 \end{figure}
 
@@ -481,15 +484,18 @@ $ ./scope.py -y -w noisy.s16
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{waterfall_sync_clean.png}
-        \caption{\label{fig:dft_clean}Clean signal on waterfall (synchronized)}
+        \caption{Clean signall, synchronized}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{waterfall_sync_noisy.png}
-        \caption{\label{fig:dft_noisy}Noisy signal on waterfall (synchronized)}
+        \caption{Noisy signal, synchronized}
     \end{subfigure}
 \end{figure}
 
 \section{Experimental results}
+
+A large number of simulations, and some real-world experiments were
+conducted. These are described below.
 
 \subsection{Real-World Experiments}
 
@@ -542,7 +548,15 @@ transmitter, and it being the receiver.
 
 A performance similar to the PC-only setup were measured: signals could 
 easily be picked up from abount 1 meter even when the laptop's fan were 
-on, or some music or noise could be heared in the room.
+on, or when some music or noise could be heared in the room. The
+experiments were repeated with reversed roles, and performance remained
+similar.
+
+\subsubsection{Conclusions}
+
+Experiments showed that the software worked beyond expectations, but also
+revealed severe performance bottlenecks. The sensitivity to multipath
+definitely needs to be addressed.
 
 \subsection{Benchmarks}
 
@@ -560,7 +574,7 @@ quickly falling under that: about 83.4\% good decodes were logged at
 \emph{code rate} of the error correcting code is rather low.
 
 \textbf{It is also worth mentioning that none of the messages were ever 
-corrupted: they either decode correctly, or doesn't.}
+corrupted: they either decoded correctly, or didn't at all.}
 
 The synchronization method was found out to have been a very good 
 choice, might even have been an overkill. \textbf{In the vast majority 
@@ -568,50 +582,57 @@ of the cases, the positions of the data frames were precisely
 identified, even in cases where decoding was impossible.} Even when the 
 algorithm made errors finding frames, it only missed 10 samples in 
 either direction, so instead of one, only 3 positions were ever 
-identified.
+identified. This is a useful property, and woth noting it in case the
+synchronization precision would need to be improved for some reason.
 
-
-FILES:         {-5: 1000, -3: 1000, -4: 1000, -14: 1000, -12: 1000, -9: 1000, -7: 1000, -13: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 1000}
-GOOD DECODES:  {-5: 1000, -3: 1000, -4: 1000, -12: 834, -9: 1000, -7: 1000, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999, -13: 103}
-NO DECODES:    {-14: 1000, -13: 897, -12: 166, -11: 1}
-BAD DECODES:   {}
-GOOD SYNCS:    {-5: 1000, -3: 1000, -4: 1000, -14: 980, -12: 999, -9: 1000, -7: 1000, -13: 990, -6: 1000, -10: 1000, -8: 1000, -2: 1000, -1: 1000, -11: 999}
-BAD SYNCS:     {-13: 10, -14: 20, -12: 1, -11: 1}
-BAD SYNC SET:  {2040, 2060}
-
-
-\section{Implementation Challenges and Possible Improvements}
+\section{Implementation Challenges, Possible Improvements}
 
 The work I've done on this project so far is rather experimental. The 
-finished product has to work in different environments and work with 
-various noise sources, and a large variety of devices with different 
-parameters.
+finished product has to work in different environments, with various
+noise sources, and a large variety of devices with different
+properties.
 
 I hereby attempt to address a few problems that might come up during 
-the deployment of this -- or similar -- solution. I also provides 
+the deployment of this -- or similar -- solution.
 
 \subsection{Parameters, Tuning}
 
+The performance of thecomponents of the system is not well balanced.
+The synchronization works very well, but also takes about the half of
+the bandwidth away. It's possible to make a tradeoff between the
+effectiveness of the synchronization algorithm and the bandwidth it
+uses. Bandwidth then can be used to increase symbol time and combat
+noise and multipath, and/or to decrease code rate, and have more
+immunity to momentarily signal dropout and similar burst errors.
+
+There is a tradeoff between the code rate and the symbol time even when
+we consider the sync vector to be constant. A longer symbol time and
+higher code rate might provide better white noise and multipath
+immunity. The possible set of parameters can be explored automaticly
+with machine learning algorithms, similarly to how good synchronization
+vectors were found in the first place.
+
 \subsection{Processing power}
 
-\subsection{Non-white Noise}
+In the current form, the software consumes quite a lot of CPU. The
+implementation of the decoding algorithm must be chosen carefully, and
+well-optimized native code will probably be needed for acceptable
+performance.
+
+\subsection{Channel model}
+
+The simulations use a simple Additive Gaussian White Noise channel.
+Real-world noise will very likely to be different. Any further
+development would benefit from a noise model that is more faithful to
+the environments in which the solution will be deployed.
 
 \subsection{Erasure detection}
 
 \subsection{Choice of FEC, Implementation, Performance}
 
-Code rate - sync performance tradeoff
-
-Koetter-Vardy soft-decision decoding: Patent issues
-
 Franke-Taylor algorithm adapted for RS(54,20)
 
 LDPC
-
-Rateless erasure codes (fountain codes): Raptor code 
-(RaptorQ\footnote{\url{https://tools.ietf.org/html/rfc6330}}), online 
-codes\footnote{\url{https://pdos.csail.mit.edu/~petar/papers/maymounkov-bigdown-lncs.ps}}
-
 
 \subsection{Multipath}
 
@@ -622,11 +643,11 @@ of this solution.
     \centering
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=\textwidth]{waterfall_sync_clean.png}
-        \caption{\label{fig:waterfall_sync_clean}Clean signal}
+        \caption{Clean signal}
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=1\textwidth]{waterfall_sync_multipath.png}
-        \caption{\label{fig:waterfall_sync_multipath}Multipath-affected signal}
+        \caption{Multipath-affected signal}
     \end{subfigure}
 \end{figure}
 
@@ -634,21 +655,12 @@ of this solution.
     \centering
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=1\textwidth]{correlation_clean.png}
-        \caption{\label{fig:correlation_clean}Correlation vector of a reasonably clean signal}
+        \caption{Correlation vector of a reasonably clean signal}
     \end{subfigure}
     \begin{subfigure}{0.45\textwidth}
         \includegraphics[width=1\textwidth]{correlation_multipath.png}
-        \caption{\label{fig:correlation_multipath}Correlation vector of a signal affected by multipath}
+        \caption{Correlation vector of a signal affected by multipath}
     \end{subfigure}
 \end{figure}
 
-\newpage
-
-
-\begin{thebibliography}{9}
-\bibitem{sox1}
-  SoX - Sound eXchange \url{http://sox.sourceforge.net/}
-\bibitem{ana1}
-  Anaconda \url{https://www.anaconda.com/download}
-\end{thebibliography}
 \end{document}
