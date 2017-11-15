@@ -4,6 +4,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{times}
 \usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{subcaption}
 \usepackage{float}
@@ -70,10 +71,87 @@ at -12dB CNR (about 8.9dB $E_b/N_0$).
 In real-world experiment using a small set of consumer-grade computer 
 audio devices I could achieve reliable data transfer well over 1 meter 
 in a quiet room at quite low volume levels. Noisy environments mandate 
-higher volume setting and/or shorter distances. \section{Theory of 
-Operation} \subsection{Design considerations} \subsection{Modulation 
-and Demodulation} \subsection{Synchronization} \subsection{Forward 
-Error Correction} \section{The Software}
+higher volume setting and/or shorter distances. Multipath propagation
+probably is the main performance bottleneck.
+
+\section{Theory of Operation}
+
+I provide a summary on the operation of the software. See the inline
+code documentation for implementation details.
+
+\subsection{Modulation}
+
+The data has to be transmitted with equipment design to produce and
+record audio. Since little was known about the working environment,
+an Additive Gaussian White Noise (AGWN) channel was used as the channel
+model. In real life however, it is likely that noise bursts will occur
+frequently.
+
+Audio sampling rate was determined tobe 44.1KHz. This sampling rate
+along with 48KHz is the most frequently supported one, and 48KHz audio
+can easily be downsampled on devices only supporting that.
+
+The transmitting device will be a piezoelectric speaker with currently
+unknown characteristics. The carrier frequency of about 4KHz, and a
+maximum bandwidth of also 4KHz was determined. The bandwidth were kept
+lower than the carrier frequency, to preven harmonics interfering with
+the reception.
+
+Using 44100 samples / second sampling rate, a 200 sample DFT will have
+a bucket size of 220.5 Hz. To keep the modulation process simple, one
+transmitted symbol will contain 4 bits, or half a byte of information.
+To encode 4 bits, a symbol must communicate 16 separate states.
+
+The modulation uses 17 frequencies in the form of $4410 + n*220.5$ Hz
+where $n \in [0..16] \cap \mathbb{Z}$. About half of the time the
+carrier ($n=0$) is transmitted, and no actual data is sent. This is for
+synchronization. When this tone is off, one of the other 16 frequencies
+($n \in [1..16] \cup \mathbb{Z}$) is transmitted, this is when data is
+actually being transmitted. So instead of 16 symbols, a 17 symbol
+alphabet is being used, out of which the carrier or zero symbol is used
+for frame synchronization.
+
+The carrier is turned on-off in a way so it can easily be found using
+autocorrelation. The exact sequence of on-off states affect how easily
+it may spotted using autocorrelation. Good sync sequences were found
+using gradient descent with random restarts: essentially by checking
+random sequences, and looking for neighbours with increasingly better
+properties, until the process stucks in a local optimum, after which
+the process is restarted from an other random vector.
+
+A total of 200 symbols are transmitted, out of those 108 are used to
+transmit data, and 92 used for synchronization only. Transmitting one
+frame takes about 0.91 seconds.
+
+\subsection{Demodulation}
+
+Demodulation begins by recording a chunk of audio longer than a single
+frame. After normalizing the received data and correlating it with the
+synchronization sequence, a decision is made wether there is a singal
+present. The correlation will return the position where the sync signal
+matches the audio the most.
+
+Using the position information 200 DFTs are created across 200 samples
+each. The received power in each bin is observed, and a hard decision
+is made about what symbol that the particular 200-sample audio data
+might encode. Only the DFT encoding the 108 data nibbles are kept, and
+the nibbles are assembled into 54 bytes.
+
+\subsection{Forward Error Correction}
+
+A Reed-Solomon code RS(54,20) were chosen for forward error correction,
+mainly because implementations were readily available, and of course
+because of their good performance.
+
+The error correcting code takes 20 byte payload, and produces a 54 byte
+frame. The code is capable of correcting 17 errors or 34 erasures.
+Currently the software does not signal erasure towards the decoder,
+but there are methods\cite{ft1} for doing so.
+
+\section{The Software}
+
+This section describes how the software should be operated to run
+demonstrations and experiments.
 
 \subsection{Prerequisites}
 
@@ -555,8 +633,8 @@ similar.
 \subsubsection{Conclusions}
 
 Experiments showed that the software worked beyond expectations, but also
-revealed severe performance bottlenecks. The sensitivity to multipath
-definitely needs to be addressed.
+revealed performance bottlenecks. The sensitivity to multipath in
+particular needs to be addressed.
 
 \subsection{Benchmarks}
 
@@ -626,18 +704,25 @@ Real-world noise will very likely to be different. Any further
 development would benefit from a noise model that is more faithful to
 the environments in which the solution will be deployed.
 
-\subsection{Erasure detection}
-
 \subsection{Choice of FEC, Implementation, Performance}
 
-Franke-Taylor algorithm adapted for RS(54,20)
+The Franke-Taylor algorithm\cite{ft1} can be adapted for RS(54,20).
+This could provide as much as 2dB improvement over the hard-decision
+algebraic decoding that were used in the software.
 
-LDPC
+Other modern codes, like LDPC codes could be used instead of
+Reed-Solomon codes. Because the lack of ready-to-use implementations,
+using such codes was not attempted.
 
 \subsection{Multipath}
 
 Currently this is one of the major factors that limit the performance 
-of this solution.
+of this solution. It can confuse the receiver even when noise and
+distance are not problems. It is also not obvious what is happening,
+and multipath can cause seemingly random, frustrating packet loss.
+
+On the following waterfall charts a clean and a multipath-affected
+signal can be seen:
 
 \begin{figure}[H]
     \centering
@@ -651,6 +736,20 @@ of this solution.
     \end{subfigure}
 \end{figure}
 
+Notice how the power creeps from one symbol to the next few one, and
+blur the image, making demodulation impossible. This signal cannot be
+decoded, despite having no significant noise in it.
+
+The next images show correlation vectors of the same signals. The
+correlation vector contains information about the position of the
+received frame. The clean signal has a sharp, single spike with small
+sidelobes, whereas the multipath-affected signal has multiple large
+bumps near the main spike that also looks flattened. This is a sign of
+multiple synchronization vectors in the same audio. During the
+experiment only one transmitter was used, so these must be different
+copies of the very same signal bouncing around the room, and getting
+back into the microphone.
+
 \begin{figure}[H]
     \centering
     \begin{subfigure}{0.45\textwidth}
@@ -662,5 +761,29 @@ of this solution.
         \caption{Correlation vector of a signal affected by multipath}
     \end{subfigure}
 \end{figure}
+
+This problem were almost only encountered when the transmitting speaker
+and the receiving microphone weren't facing each other. Microphones and
+speakers tend to be directional \emph{by design}. If they are facing
+each other, they amplify the signal, and signals coming from other
+directions are attenuated. If they are facing away each other, stray
+signals amplified, and the original one gets attenuated.
+
+This phenomenon can be mitigated by increasing the symbol time, and
+even by introducting guard intervals. This decreases symbol rate, and
+makes synchronization harder.
+
+\textbf{To tackle this problem efficiently, more information on the
+transmitting equipment and the working environments is needed, because
+the carrier frequency, bandwidth, noise and multipath models need to be
+gotten right for the system's design to be optimal.}
+
+\begin{thebibliography}{9}
+\bibitem{ft1}
+  Steven J. Franke, K9AN and Joseph H. Taylor, K1JT
+  \emph{Open Source Soft-Decision Decoder for the JT65 (63,12) Reed-Solomon
+  Code}, QEX, 2016
+\end{thebibliography}
+
 
 \end{document}
