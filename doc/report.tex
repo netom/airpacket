@@ -32,29 +32,30 @@
 
 \section{Introduction}
 
-A robust method for transmitting and receiving 20 byte long data 
-packets using sound is described.
+A method for transmitting and receiving 20 bytes long data packets 
+using sound is described.
 
-The method uses 17 tones and continuous-phase frequency-shift keying. 
-Frame synchronization is achieved by using the lowest tone to transmit 
-a sequence with low acyclic autocorrelation, and near 50\% duty cycle. 
-The remaining 16 tones encode 4 bits per symbol. Reed-Solomon code 
-RS(54,20) is applied before modulation, to yield a 54 byte codeword. 
-The codeword is then translated to 16-tone symbols and interleaved with
-the 17th synchronization tone.
+The method uses 17 tones and continuous-phase frequency-shift keying 
+(CPFSK). Frame synchronization is achieved by using the lowest tone to 
+transmit a sequence having low acyclic autocorrelation, and near 50\% 
+duty cycle. The remaining 16 tones encode 4 bits per symbol. 
+Reed-Solomon code RS(54,20) is applied before modulation, to yield a 54 
+byte codeword. The codeword is then translated to 16-tone symbols and 
+interleaved with the 17th synchronization tone. A symbol is 200 samples
+at a 44100 Hz sampling rate, or about 4.54ms long.
 
-On the receiving end, the demodulator uses correlation with the
-synchronization sequence to find a transmitted frame. The 16 tone data
-symbols are decoded non-coherently, using Fast Fourier Transformation,
-and choosing the FFT bucket with the largest power. The symbols then
-transformed to half-bytes (or \textit{nibbles}). The received nibbles
+On the receiving end, the demodulator uses correlation with the 
+synchronization sequence to find a transmitted frame. The 16 tone data 
+symbols are decoded non-coherently, using Fast Fourier Transformation, 
+and choosing the FFT bucket with the largest power. The symbols then 
+transformed to half-bytes (or \emph{nibbles}). The received nibbles 
 then assembled to bytes, and decoded using RS(54,20).
 
 A software was written in the Python language for experimental and 
 demonstration purposes. Scripts are provided to send and receive short 
 text messages using the computer's audio devices, or to read/write the 
 audio to/from data files. The files can be played back, or converted 
-into more traditional audio formats using sox
+into more traditional audio formats using sox 
 \footnote{\url{http://sox.sourceforge.net/}}.
 
 A framework was established to gauge the performance of the software. A 
@@ -63,20 +64,20 @@ various levels of white noise. An other script then can be used to
 attempt decoding these files. Various statistics are shown after the 
 script finished decoding the files.
 
-Simulations show that this method can transmit data 99.9\% accurately 
-at a carrier to noise ratio (CNR) of -11dB (or at about 9.9dB 
+Experiments show that this method can transmit data 99.9\% accurately 
+at a carrier to noise ratio (CNR) of -11dB (or at about 10dB 
 $E_b/N_0$) measured over 22.05 KHz bandwidth, and with 83.4\% accuracy 
-at -12dB CNR (about 8.9dB $E_b/N_0$).
+at -12dB CNR (about 9dB $E_b/N_0$).
 
-In real-world experiment using a small set of consumer-grade computer 
+In real-world experiments using a small set of consumer-grade computer 
 audio devices I could achieve reliable data transfer well over 1 meter 
 in a quiet room at quite low volume levels. Noisy environments mandate 
-higher volume setting and/or shorter distances. Multipath propagation
-probably is the main performance bottleneck.
+higher volume setting and/or shorter distances. Interference due to 
+multipath propagation probably is the main performance bottleneck.
 
 \section{Theory of Operation}
 
-I provide a summary on the operation of the software. See the inline
+I provide a summary on the operation of the software. See the in-line
 code documentation for implementation details.
 
 \subsection{Modulation}
@@ -87,15 +88,16 @@ an Additive Gaussian White Noise (AGWN) channel was used as the channel
 model. In real life however, it is likely that noise bursts will occur
 frequently.
 
-Audio sampling rate was determined tobe 44.1KHz. This sampling rate
-along with 48KHz is the most frequently supported one, and 48KHz audio
+Audio sampling rate was determined to be 44.1KHz. This sampling rate 
+along with 48KHz is the most frequently supported one, and 48KHz audio 
 can easily be downsampled on devices only supporting that.
 
 The transmitting device will be a piezoelectric speaker with currently
 unknown characteristics. The carrier frequency of about 4KHz, and a
 maximum bandwidth of also 4KHz was determined. The bandwidth were kept
-lower than the carrier frequency, to preven harmonics interfering with
-the reception.
+lower than the carrier frequency, to prevent harmonics interfering with
+the reception, so the transmitter can drive the speaker with a square
+wave.
 
 Using 44100 samples / second sampling rate, a 200 sample DFT will have
 a bucket size of 220.5 Hz. To keep the modulation process simple, one
@@ -111,31 +113,34 @@ actually being transmitted. So instead of 16 symbols, a 17 symbol
 alphabet is being used, out of which the carrier or zero symbol is used
 for frame synchronization.
 
-The carrier is turned on-off in a way so it can easily be found using
-autocorrelation. The exact sequence of on-off states affect how easily
-it may spotted using autocorrelation. Good sync sequences were found
-using gradient descent with random restarts: essentially by checking
-random sequences, and looking for neighbours with increasingly better
-properties, until the process stucks in a local optimum, after which
-the process is restarted from an other random vector.
+The carrier is turned on-off in a way so it can easily be found using 
+correlation. The exact sequence of on-off states affect how easily it 
+may spotted by correlating a potentially noisy and arbitrary 
+time-shifted signal with a known, clean synchronization sequence.
 
-A total of 200 symbols are transmitted, out of those 108 are used to
-transmit data, and 92 used for synchronization only. Transmitting one
-frame takes about 0.91 seconds.
+Good sync sequences were found using gradient descent with random 
+restarts: essentially by checking random sequences, and looking for 
+neighbors with increasingly better properties, until the process 
+stuck in a local optimum, after which it is restarted from an other
+random vector.
+
+A total of 200 symbols are transmitted, out of those 108 are used to 
+transmit data, and 92 used for synchronization only. Transmitting one 
+frame takes about 0.907 seconds. \textbf{The effective bit rate is 
+176.4bps.}
 
 \subsection{Demodulation}
 
 Demodulation begins by recording a chunk of audio longer than a single
 frame. After normalizing the received data and correlating it with the
-synchronization sequence, a decision is made wether there is a singal
+synchronization sequence, a decision is made whether there is a signal
 present. The correlation will return the position where the sync signal
 matches the audio the most.
 
-Using the position information 200 DFTs are created across 200 samples
-each. The received power in each bin is observed, and a hard decision
-is made about what symbol that the particular 200-sample audio data
-might encode. Only the DFT encoding the 108 data nibbles are kept, and
-the nibbles are assembled into 54 bytes.
+Using the position information 108 DFTs at positions where the first
+tone is off. The received power in each bin is observed, and a hard
+decision is made about what symbol the particular 200-sample audio data
+might encode. Only the DFTs encoding the 108 data nibbles are kept.
 
 \subsection{Forward Error Correction}
 
@@ -169,8 +174,8 @@ configuration \textit{before} Python installation is recommended:
 macOS should also work
 \end{itemize}
 
-It is recommended to install a Python distribution called Anaconda
-\footnote{url{https://www.anaconda.com/download}}. Anaconda a contains
+It is recommended to install a Python distribution called Anaconda 
+\footnote{url{https://www.anaconda.com/download}}. Anaconda a contains 
 stable and fast Python build along with several important libraries.
 
 \subsection{Installation}
@@ -179,10 +184,9 @@ Anaconda 5.0.1 with Python 3.6 can be downloaded from:
 
 \url{https://www.anaconda.com/download}.
 
-There are installers for 
-Linux, Windows and macOS operating system. Any of those systems should 
-be able to run the demo software, but it had only been tested throughly 
-on Ubuntu Linux "zesty" 17.04.
+There are installers for Linux, Windows and macOS operating system. Any 
+of those systems should be able to run the demo software, but it had 
+only been tested throughly on Ubuntu Linux "zesty" 17.04.
 
 The scripts \texttt{send.py} and \texttt{receive.py} use 
 \textit{pyaudio}, a Python binding for an audio library called 
@@ -253,6 +257,8 @@ can be ignored.
 
 Since \texttt{send.py} and \texttt{receive.py} are using the default 
 audio device, this list will probably rarely be needed.
+
+\newpage
 
 \begin{lstlisting}
 $ ./devices.py 
@@ -353,8 +359,8 @@ $
 Without the \texttt{-f} parameter the script listens on the default 
 audio device. The \texttt{-x} flag is useful for printing arbitrary 
 binary data. Without this flag the script tries to convert the received 
-data to ASCII strings, and print that instead of hexa digits. Call the 
-script with tthe \texttt{-h} parameter to get a list of usable flags 
+data to ASCII strings, and print that instead of hex digits. Call the 
+script with the \texttt{-h} parameter to get a list of usable flags 
 and parameters and their descriptions.
 
 \subsubsection{Recording audio}
@@ -429,7 +435,7 @@ long. The signal is right in the middle of every file at offset 2050.
 \subsubsection{Scoring performance on a test file set}
 
 The \texttt{test-score.py} script will read any .s16 files from the 
-data directory and will attempty to demodulate and decode them. It will 
+data directory and will attempt to demodulate and decode them. It will 
 record any success or failure in finding the synchronization signal or 
 decoding the actual message.
 
@@ -447,7 +453,7 @@ BAD SYNC SET:  {2040, 2060}
 \end{lstlisting}
 
 Each line shows a metric. The number before the colons are specific CNR 
-values, the number after the colons are the number of occurences.
+values, the number after the colons are the number of occurrences.
 
 For example the ,,FILES'' line shows the number of files. It can be 
 seen that for the CNR level of -5(dB) there were ,,1000'' files in the 
@@ -577,6 +583,10 @@ conducted. These are described below.
 
 \subsection{Real-World Experiments}
 
+Real-world experiments in the given could only yield a modest number
+of data points. The following description focuses more on practical,
+usability aspects, and does not try to communicate precise figures.
+
 \subsubsection{Single PC setup}
 
 A single desktop personal computer with a high quality speaker and 
@@ -589,15 +599,9 @@ were talking if the microphone and speaker were facing each other.}
 
 Performance was heavily dependent on the microphone setup and volume 
 setting. Too high volume causes clipping and destroys the signal, to 
-loo volume hides the signal in the noise of the recording equipment. If 
+low volume hides the signal in the noise of the recording equipment. If 
 the microphone were facing in a direction other than the speaker, 
 \emph{multipath propagation} was found to interfere with reception.
-
-Ambient noise will of course interfere with the reception, but the 
-volume of the transmitted signal could always be set high enough to 
-ensure success, and not be particularly annoying (althoug this is 
-highly subjective, and should carefully be considered while developing 
-the product).
 
 \subsubsection{Single notebook setup}
 
@@ -608,25 +612,24 @@ equipped with forced air cooling, and the fan was on most of the time.
 The built-in microphone and the speaker were about 12cm close together. 
 The received signals weren't as high quality as with the PC setup. This 
 was due not to the distance, but to the fact that the speakers and the 
-microphone were deliberatly placed and insulated so that the audio 
+microphone were deliberately placed and insulated so that the audio 
 feedback is as little as possible.
 
 The microphone in this setup faces away from the speakers, and picks 
-other sounds up much easily, including the sound of the speakers 
-bouncing off objects, and arriving from the front.
-
-Because of this, the signal gets back to the receiver multiple times 
-with some delay. This can easily confuse the demodulator.
+other sounds up easily, including the sound of the speakers bouncing
+off objects, and arriving from the front. Because of this, the signal
+gets back to the receiver multiple times with some delay.
+This can easily confuse the demodulator.
 
 \subsubsection{Notebook-PC setup}
 
 To rule out any problem with the laptop's microphone and audio 
-circutry, several experiments were conducted with the PC set being the 
+circuitry, several experiments were conducted with the PC set being the 
 transmitter, and it being the receiver.
 
 A performance similar to the PC-only setup were measured: signals could 
-easily be picked up from abount 1 meter even when the laptop's fan were 
-on, or when some music or noise could be heared in the room. The
+easily be picked up from about 1 meter even when the laptop's fan were 
+on, or when some music or noise could be heard in the room. The
 experiments were repeated with reversed roles, and performance remained
 similar.
 
@@ -634,7 +637,12 @@ similar.
 
 Experiments showed that the software worked beyond expectations, but also
 revealed performance bottlenecks. The sensitivity to multipath in
-particular needs to be addressed.
+particular needs to be addressed. Ambient noise will of course interfere
+with the reception, but the volume of the transmitted signal could always
+be set high enough to ensure success, and not be particularly annoying
+(although this is highly subjective, and should carefully be considered
+while developing the product). Multipath in contrast mostly dependent on
+the paths, and not the volume, so increasing it has little benefit.
 
 \subsection{Benchmarks}
 
@@ -660,7 +668,7 @@ of the cases, the positions of the data frames were precisely
 identified, even in cases where decoding was impossible.} Even when the 
 algorithm made errors finding frames, it only missed 10 samples in 
 either direction, so instead of one, only 3 positions were ever 
-identified. This is a useful property, and woth noting it in case the
+identified. This is a useful property, and worth noting it in case the
 synchronization precision would need to be improved for some reason.
 
 \section{Implementation Challenges, Possible Improvements}
@@ -675,18 +683,18 @@ the deployment of this -- or similar -- solution.
 
 \subsection{Parameters, Tuning}
 
-The performance of thecomponents of the system is not well balanced.
+The performance of the components of the system is not well balanced.
 The synchronization works very well, but also takes about the half of
-the bandwidth away. It's possible to make a tradeoff between the
+the bandwidth away. It's possible to make a trade-off between the
 effectiveness of the synchronization algorithm and the bandwidth it
 uses. Bandwidth then can be used to increase symbol time and combat
 noise and multipath, and/or to decrease code rate, and have more
 immunity to momentarily signal dropout and similar burst errors.
 
-There is a tradeoff between the code rate and the symbol time even when
+There is a trade-off between the code rate and the symbol time even when
 we consider the sync vector to be constant. A longer symbol time and
 higher code rate might provide better white noise and multipath
-immunity. The possible set of parameters can be explored automaticly
+immunity. The possible set of parameters can be explored automatically
 with machine learning algorithms, similarly to how good synchronization
 vectors were found in the first place.
 
@@ -743,7 +751,7 @@ decoded, despite having no significant noise in it.
 The next images show correlation vectors of the same signals. The
 correlation vector contains information about the position of the
 received frame. The clean signal has a sharp, single spike with small
-sidelobes, whereas the multipath-affected signal has multiple large
+side lobes, whereas the multipath-affected signal has multiple large
 bumps near the main spike that also looks flattened. This is a sign of
 multiple synchronization vectors in the same audio. During the
 experiment only one transmitter was used, so these must be different
@@ -770,13 +778,13 @@ directions are attenuated. If they are facing away each other, stray
 signals amplified, and the original one gets attenuated.
 
 This phenomenon can be mitigated by increasing the symbol time, and
-even by introducting guard intervals. This decreases symbol rate, and
+even by introducing guard intervals. This decreases symbol rate, and
 makes synchronization harder.
 
 \textbf{To tackle this problem efficiently, more information on the
 transmitting equipment and the working environments is needed, because
-the carrier frequency, bandwidth, noise and multipath models need to be
-gotten right for the system's design to be optimal.}
+the carrier frequency, bandwidth, noise, and multipath models need to be
+gotten right for the design of the system to be optimal.}
 
 \begin{thebibliography}{9}
 \bibitem{ft1}
