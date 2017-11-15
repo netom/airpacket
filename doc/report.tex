@@ -21,7 +21,7 @@
     basicstyle=\footnotesize\ttfamily
 }
 
-\title{Experimental data transmission using sound}
+\title{Experimental data transmission method using sound}
 
 \author{FÁBIÁN Tamás László}
 
@@ -39,16 +39,16 @@ The method uses 17 tones and continuous-phase frequency-shift keying.
 Frame synchronization is achieved by using the lowest tone to transmit 
 a sequence with low acyclic autocorrelation, and near 50\% duty cycle. 
 The remaining 16 tones encode 4 bits per symbol. Reed-Solomon code 
-RS\(54,20\) is applied before modulation, to yield the 54 byte payload. 
-The payload then translated to 16-tone symbols and interleaved with the 
-17th synchronization tone.
+RS(54,20) is applied before modulation, to yield a 54 byte codeword. 
+The codeword is then translated to 16-tone symbols and interleaved with
+the 17th synchronization tone.
 
-On the receiving end, the demodulator uses correlation to find a 
-transmitted frame. The 16 tone data symbols are decoded non-coherently, 
-using Fast Fourier Transformation, and choosing the FFT bucket with the 
-largest power. The symbols then transformed to half-bytes (or 
-\textit{nibbles}). The received nibbles then assembled to bytes, and 
-decoded using RS(54,20).
+On the receiving end, the demodulator uses correlation with the
+synchronization sequence to find a transmitted frame. The 16 tone data
+symbols are decoded non-coherently, using Fast Fourier Transformation,
+and choosing the FFT bucket with the largest power. The symbols then
+transformed to half-bytes (or \textit{nibbles}). The received nibbles
+then assembled to bytes, and decoded using RS(54,20).
 
 A software was written in the Python language for experimental and 
 demonstration purposes. Scripts are provided to send and receive short 
@@ -562,7 +562,7 @@ $ ./scope.py -y -w noisy.s16
     \centering
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{waterfall_sync_clean.png}
-        \caption{Clean signall, synchronized}
+        \caption{Clean signal, synchronized}
     \end{subfigure}
     \begin{subfigure}[b]{0.45\textwidth}
         \includegraphics[width=1\textwidth]{waterfall_sync_noisy.png}
