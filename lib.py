@@ -129,16 +129,13 @@ def symbols2tones(symbolList, amplitude=1.0, distortion=1.0):
 
     return tones
 
-def receive_frame(frame, dft_window = None):
+def receive_frame(frame):
     syms = []
     erasures = []
     j = 0
     ffts = []
     for i in range(len(syncBits)):
-        if dft_window != None:
-            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]*dft_window(SYMBOL_LENGTH))[FFT_OFFSET+1:FFT_OFFSET+CPMSK_N])
-        else:
-            fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH]                          )[FFT_OFFSET+1:FFT_OFFSET+CPMSK_N])
+        fft = np.absolute(np.fft.rfft(frame[i*SYMBOL_LENGTH:(i+1)*SYMBOL_LENGTH])[FFT_OFFSET+1:FFT_OFFSET+CPMSK_N])
         ffts.append(fft)
 
         if syncBits[i] == 1:
