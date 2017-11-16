@@ -33,30 +33,13 @@
 \section{Introduction}
 
 A method for transmitting and receiving 20 bytes long data packets 
-using sound is described.
-
-The method uses 17 tones and continuous-phase frequency-shift keying 
-(CPFSK). Frame synchronization is achieved by using the lowest tone to 
-transmit a sequence having low acyclic autocorrelation, and near 50\% 
-duty cycle. The remaining 16 tones encode 4 bits per symbol. 
-Reed-Solomon code RS(54,20) is applied before modulation, to yield a 54 
-byte codeword. The codeword is then translated to 16-tone symbols and 
-interleaved with the 17th synchronization tone. A symbol is 200 samples
-at a 44100 Hz sampling rate, or about 4.54ms long.
-
-On the receiving end, the demodulator uses correlation with the 
-synchronization sequence to find a transmitted frame. The 16 tone data 
-symbols are decoded non-coherently, using Fast Fourier Transformation, 
-and choosing the FFT bucket with the largest power. The symbols then 
-transformed to half-bytes (or \emph{nibbles}). The received nibbles 
-then assembled to bytes, and decoded using RS(54,20).
+using sound is described. The method uses continuous-phase multiple frequency-shift keying (CPFSK), and a robust synchronization method. A Reed-Solomon code is used for forward error correction.
 
 A software was written in the Python language for experimental and 
 demonstration purposes. Scripts are provided to send and receive short 
 text messages using the computer's audio devices, or to read/write the 
 audio to/from data files. The files can be played back, or converted 
-into more traditional audio formats using sox 
-\footnote{\url{http://sox.sourceforge.net/}}.
+into more traditional audio formats using sox\cite{sox1}.
 
 A framework was established to gauge the performance of the software. A 
 script can generate random messages and save them into audio files with 
@@ -70,7 +53,7 @@ $E_b/N_0$) measured over 22.05 KHz bandwidth, and with 83.4\% accuracy
 at -12dB CNR (about 9dB $E_b/N_0$).
 
 In real-world experiments using a small set of consumer-grade computer 
-audio devices I could achieve reliable data transfer well over 1 meter 
+audio devices reliable data transfer could be achieved over 1 meter 
 in a quiet room at quite low volume levels. Noisy environments mandate 
 higher volume setting and/or shorter distances. Interference due to 
 multipath propagation probably is the main performance bottleneck.
@@ -82,11 +65,11 @@ code documentation for implementation details.
 
 \subsection{Modulation}
 
-The data has to be transmitted with equipment design to produce and
-record audio. Since little was known about the working environment,
-an Additive Gaussian White Noise (AGWN) channel was used as the channel
-model. In real life however, it is likely that noise bursts will occur
-frequently.
+The data has to be transmitted and received with equipments designed to
+produce and record audio. Since little was known about the working
+environment, an Additive Gaussian White Noise (AGWN) channel was used
+as the channel model. In real life however, it is likely that noise
+bursts will occur frequently.
 
 Audio sampling rate was determined to be 44.1KHz. This sampling rate 
 along with 48KHz is the most frequently supported one, and 48KHz audio 
@@ -99,7 +82,7 @@ lower than the carrier frequency, to prevent harmonics interfering with
 the reception, so the transmitter can drive the speaker with a square
 wave.
 
-Using 44100 samples / second sampling rate, a 200 sample DFT will have
+Using 44100 samples per second sampling rate, a 200 sample DFT will have
 a bucket size of 220.5 Hz. To keep the modulation process simple, one
 transmitted symbol will contain 4 bits, or half a byte of information.
 To encode 4 bits, a symbol must communicate 16 separate states.
@@ -115,7 +98,7 @@ for frame synchronization.
 
 The carrier is turned on-off in a way so it can easily be found using 
 correlation. The exact sequence of on-off states affect how easily it 
-may spotted by correlating a potentially noisy and arbitrary 
+may be spotted by correlating a potentially noisy and arbitrary 
 time-shifted signal with a known, clean synchronization sequence.
 
 Good sync sequences were found using gradient descent with random 
@@ -149,7 +132,7 @@ mainly because implementations were readily available, and of course
 because of their good performance.
 
 The error correcting code takes 20 byte payload, and produces a 54 byte
-frame. The code is capable of correcting 17 errors or 34 erasures.
+codeword. The code is capable of correcting 17 errors or 34 erasures.
 Currently the software does not signal erasure towards the decoder,
 but there are methods\cite{ft1} for doing so.
 
@@ -167,16 +150,16 @@ configuration \textit{before} Python installation is recommended:
 \begin{itemize}
 \item Intel Core i5 processor, or better
 \item 4GB RAM
-\item 5GB of free disk space
+\item 6GB of free disk space
 \item Speakers
 \item Microphone
 \item Ubuntu Linux 17.04 or newer is recommended, a recent Windows or
 macOS should also work
 \end{itemize}
 
-It is recommended to install a Python distribution called Anaconda 
-\footnote{url{https://www.anaconda.com/download}}. Anaconda a contains 
-stable and fast Python build along with several important libraries.
+It is recommended to install a Python distribution called Anaconda
+\cite{ana1}. Anaconda a contains stable and fast Python build along
+with several important libraries.
 
 \subsection{Installation}
 
@@ -191,7 +174,7 @@ only been tested throughly on Ubuntu Linux "zesty" 17.04.
 The scripts \texttt{send.py} and \texttt{receive.py} use 
 \textit{pyaudio}, a Python binding for an audio library called 
 \textit{portaudio}. The portaudio library (.so, .dll, or .dynlib) and 
-header files need to be installed. The installation process is differs 
+header files need to be installed. The installation process differs 
 across operating systems, and can be as simple as issuing a command 
 (Linux and maxOS), or having to install Visual Studio and compile the 
 library by hand (Windows)\footnote{This is why the .dll-s and headers 
@@ -233,9 +216,9 @@ C:\> pip install -r requirements.txt
 
 The scripts \texttt{test-gen.py} and \texttt{text-score.py} can 
 generate a large set of audio files, and run a decoding benchmark on 
-them respectively. Any computer capable running Python properly may be 
-used to run the benchmark. Since the process involves generating 14000 
-files consuming about 1.2GB space, this should be done on a fast 
+them respectively. Any computer capable of running Python properly may 
+be used to run the benchmark. Since the process involves generating
+14000 files consuming about 1.2GB space, this should be done on a fast
 machine.
 
 The scripts \texttt{send.py} and \texttt{receive.py} use audio devices 
@@ -311,7 +294,7 @@ The command always displays the estimated carrier to noise power ratio
 and $E_b/N_0$ in decibels. Since there is no noise added by default, 
 both figures are displayed as being infinite.
 
-Adding noise, distortion and saving the resulting audio into a file:
+Adding noise, distortion and saving the audio into a file:
 
 \begin{lstlisting}
 $ ./send.py -f test.s16 -c -11 -d 10000 test
@@ -321,9 +304,9 @@ Peak:        0.742417642773
 $
 \end{lstlisting}
 
-The files store a single audio channel at a sampling rate of 44100 KHz. 
-Each sample is a little endian 16 bit two's complement signed integer. 
-The files contain no header or any kind of metadata.
+The files store a single audio channel at a sampling rate of 44100 KHz.
+Each sample is a signed 16 bit little endian integer. The files contain
+no header or any kind of metadata.
 
 One can specify a string of hexadecimal digits to send with the 
 \texttt{-x} or \texttt{--hex} flag:
@@ -426,7 +409,7 @@ $
 During test set generation a progress bar with the speed and ETA is 
 displayed. Before generating a test set, make sure the \texttt{data} 
 directory only contains a \texttt{.gitignore} file, and no *.s16 audio 
-files. These are not remove automatically, and new files will have 
+files. These are not removed automatically, and new files will have
 different names every time.
 
 Every file is exactly 1 second, or 44100 samples -- 88200 bytes -- 
@@ -483,8 +466,8 @@ changing the modulation becomes necessary.
 
 A script named \texttt{scope.py} is provided for graphically displaying 
 waveforms stored in s16 files. The script accepts a file name as a 
-single mandatory positional parameters, and various flags that control 
-what should be displayed. By default it will display a simple waveform.
+single mandatory positional parameter, and various flags that control 
+what should be displayed. By default a simple waveform is displayed.
 
 The following flags are available:
 
@@ -583,9 +566,10 @@ conducted. These are described below.
 
 \subsection{Real-World Experiments}
 
-Real-world experiments in the given could only yield a modest number
-of data points. The following description focuses more on practical,
-usability aspects, and does not try to communicate precise figures.
+Real-world experiments in the given time frame could only yield a
+modest number of data points. The following description focuses more on
+usability and other practical aspects, and does not try to communicate
+precise figures.
 
 \subsubsection{Single PC setup}
 
@@ -642,7 +626,8 @@ with the reception, but the volume of the transmitted signal could always
 be set high enough to ensure success, and not be particularly annoying
 (although this is highly subjective, and should carefully be considered
 while developing the product). Multipath in contrast mostly dependent on
-the paths, and not the volume, so increasing it has little benefit.
+the paths, and not the volume, so increasing volume it has little
+benefit in combating multipath.
 
 \subsection{Benchmarks}
 
@@ -656,16 +641,15 @@ this convention, and has to guess the position correctly in every file.
 \textbf{It was found the decoding is possible 99.9\% of the time at 
 -11dB CNR under 22.05 KHz band-limited white noise.} Performance were 
 quickly falling under that: about 83.4\% good decodes were logged at 
--12dB, and none at -13db. This \emph{cliff effect} is due to the 
-\emph{code rate} of the error correcting code is rather low.
+-12dB, and none at -13db.
 
-\textbf{It is also worth mentioning that none of the messages were ever 
-corrupted: they either decoded correctly, or didn't at all.}
+\textbf{It is also worth mentioning that no false decodes were ever
+observed. The messages either decoded correctly, or didn't at all.}
 
 The synchronization method was found out to have been a very good 
-choice, might even have been an overkill. \textbf{In the vast majority 
+choice, might even have been an overkill. \textbf{In the vast majority
 of the cases, the positions of the data frames were precisely 
-identified, even in cases where decoding was impossible.} Even when the 
+identified, even in cases where decoding was impossible.} Even when the
 algorithm made errors finding frames, it only missed 10 samples in 
 either direction, so instead of one, only 3 positions were ever 
 identified. This is a useful property, and worth noting it in case the
@@ -745,8 +729,8 @@ signal can be seen:
 \end{figure}
 
 Notice how the power creeps from one symbol to the next few one, and
-blur the image, making demodulation impossible. This signal cannot be
-decoded, despite having no significant noise in it.
+blur the image, making correct demodulation impossible. This signal
+cannot be decoded, despite having no significant noise in it.
 
 The next images show correlation vectors of the same signals. The
 correlation vector contains information about the position of the
@@ -775,11 +759,12 @@ and the receiving microphone weren't facing each other. Microphones and
 speakers tend to be directional \emph{by design}. If they are facing
 each other, they amplify the signal, and signals coming from other
 directions are attenuated. If they are facing away each other, stray
-signals amplified, and the original one gets attenuated.
+signals are amplified, and the original one gets attenuated.
 
 This phenomenon can be mitigated by increasing the symbol time, and
 even by introducing guard intervals. This decreases symbol rate, and
-makes synchronization harder.
+makes synchronization harder. Using frequency hopping spread spectrum
+(FHSS) is an other effective way to combat this issue.
 
 \textbf{To tackle this problem efficiently, more information on the
 transmitting equipment and the working environments is needed, because
@@ -787,6 +772,10 @@ the carrier frequency, bandwidth, noise, and multipath models need to be
 gotten right for the design of the system to be optimal.}
 
 \begin{thebibliography}{9}
+\bibitem{sox1}
+  SoX, \url{http://sox.sourceforge.net/}
+\bibitem{ana1}
+  Anaconda, \url{https://www.anaconda.com/download}
 \bibitem{ft1}
   Steven J. Franke, K9AN and Joseph H. Taylor, K1JT
   \emph{Open Source Soft-Decision Decoder for the JT65 (63,12) Reed-Solomon
