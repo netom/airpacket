@@ -75,12 +75,12 @@ Audio sampling rate was determined to be 44.1KHz. This sampling rate
 along with 48KHz is the most frequently supported one, and 48KHz audio 
 can easily be downsampled on devices only supporting that.
 
-The transmitting device will be a piezoelectric speaker with currently
-unknown characteristics. The carrier frequency of about 4KHz, and a
-maximum bandwidth of also 4KHz was determined. The bandwidth were kept
-lower than the carrier frequency, to prevent harmonics interfering with
-the reception, so the transmitter can drive the speaker with a square
-wave.
+The channel properties were chosen so that the transmitting device 
+could be a low-quality piezoelectric speaker. A carrier frequency of 
+about 4KHz, and a maximum bandwidth of also 4KHz was determined. The 
+bandwidth were kept lower than the carrier frequency, to prevent 
+harmonics interfering with the reception, so the transmitter can drive 
+the speaker with a square wave.
 
 Using 44100 samples per second sampling rate, a 200 sample DFT will have
 a bucket size of 220.5 Hz. To keep the modulation process simple, one
