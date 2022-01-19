@@ -4,6 +4,5 @@ __pycache__
 *.aux
 *.log
 *.out
-*.pdf
 *.dvi
 *.gz
